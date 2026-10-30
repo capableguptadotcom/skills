@@ -47,14 +47,16 @@ def main():
             run([sys.executable, "scripts/validate.py"], workspace)
             run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"], workspace)
             git(workspace, "diff", "--check")
-            if not git(workspace, "status", "--porcelain", "--", *FILES):
+            # Check normalized staged content: on Windows a rewrite can change
+            # working-tree line endings while leaving the actual Git diff empty.
+            git(workspace, "add", "--", *FILES)
+            if not git(workspace, "diff", "--cached", "--name-only", "--", *FILES):
                 print("No upstream changes; no commit or PR needed.")
                 return
             if not args.publish:
-                print(git(workspace, "diff", "--stat"))
+                print(git(workspace, "diff", "--cached", "--stat"))
                 print("Preview only. Run with --publish to propose the verified candidate data.")
                 return
-            git(workspace, "add", "--", *FILES)
             git(workspace, "commit", "-m", "chore: refresh upstream skill candidates")
             git(workspace, "push", "origin", f"HEAD:refs/heads/{branch}")
             body = Path(tmp) / "body.md"
