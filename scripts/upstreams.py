@@ -93,10 +93,13 @@ def prepare(source, refresh):
         raise ValueError(f"Unexpected cache origin: {source['id']}")
     if git(path, "status", "--porcelain"):
         raise ValueError(f"Refusing to change dirty cache: {source['id']}")
+    git(path, "config", "core.longpaths", "true")
     if refresh:
         git(path, "fetch", "--depth", "1", "origin", source["branch"])
         git(path, "checkout", "--detach", "FETCH_HEAD")
-    git(path, "sparse-checkout", "set", "--no-cone", "**/SKILL.md", "**/LICENSE*", "**/README.md", "**/AGENTS.md", "**/references/**", "**/agents/*.yaml", "**/plugin.json")
+    # Support files remain in the hashed Git tree; deep reference directories
+    # need not be materialized in Windows' longer temporary worktree paths.
+    git(path, "sparse-checkout", "set", "--no-cone", "**/SKILL.md", "**/LICENSE*", "**/README.md")
     return path
 
 
