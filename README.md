@@ -10,7 +10,7 @@ Skills live in `skills/<name>/SKILL.md`. The `kp-` prefix avoids identical names
 npx skills add capableguptadotcom/skills
 ```
 
-Select the skills and agents you actually want. The shared [skills CLI](https://github.com/vercel-labs/skills) supports Codex, Claude Code, Cursor, and other hosts. Alternatively, copy selected `skills/kp-*` folders into your host's supported skill directory. Use one installation method per agent and avoid keeping a stale copy elsewhere.
+Select the skills and agents you actually want. The shared [skills CLI](https://github.com/vercel-labs/skills) currently requires Node.js 22.20+ and supports Codex, Claude Code, Cursor, and other hosts. Alternatively, copy selected `skills/kp-*` folders into your host's supported skill directory. Use one installation method per agent and avoid keeping a stale copy elsewhere.
 
 In Codex, invoke a selected skill explicitly, for example `$kp-review`, or let the host match its description. Installation does not guarantee automatic selection. Skills alone do not provide browser control, authenticated connectors, or execution permissions. See [host setup and migration](docs/adoption.md).
 
