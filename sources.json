@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "id": "pstack",
+      "repository": "cursor/plugins",
+      "branch": "main",
+      "scope": "pstack/",
+      "skill_roots": [
+        "pstack/skills/"
+      ],
+      "license_note": "MIT; preserve notices for copied material",
+      "support_roots": [
+        "scripts/"
+      ]
+    },
+    {
+      "id": "rstack",
+      "repository": "michaelshimeles/rstack",
+      "branch": "main",
+      "scope": "",
+      "skill_roots": [
+        ""
+      ],
+      "license_note": "No root license. Original skills reference only; vendored licenses differ."
+    },
+    {
+      "id": "ponytail",
+      "repository": "DietrichGebert/ponytail",
+      "branch": "main",
+      "scope": "",
+      "skill_roots": [
+        "skills/"
+      ],
+      "license_note": "MIT; exclude generated .openclaw mirrors"
+    },
+    {
+      "id": "mattpocock",
+      "repository": "mattpocock/skills",
+      "branch": "main",
+      "scope": "",
+      "skill_roots": [
+        "skills/"
+      ],
+      "license_note": "MIT; in-progress and misc are separately classified"
+    },
+    {
+      "id": "openai-plugins",
+      "repository": "openai/plugins",
+      "branch": "main",
+      "scope": "",
+      "skill_roots": [
+        "plugins/",
+        ".agents/skills/"
+      ],
+      "license_note": "Per-package terms; no blanket root license. Link only by default."
+    },
+    {
+      "id": "openai-skills",
+      "repository": "openai/skills",
+      "branch": "main",
+      "scope": "",
+      "skill_roots": [
+        "skills/"
+      ],
+      "status": "deprecated",
+      "license_note": "Deprecated; prefer openai/plugins. Per-skill license terms."
+    },
+    {
+      "id": "addyosmani",
+      "repository": "addyosmani/agent-skills",
+      "branch": "main",
+      "scope": "",
+      "skill_roots": [
+        "skills/"
+      ],
+      "license_note": "MIT"
+    },
+    {
+      "id": "emilkowalski",
+      "repository": "emilkowalski/skills",
+      "branch": "main",
+      "scope": "",
+      "skill_roots": [
+        "skills/"
+      ],
+      "license_note": "MIT"
+    },
+    {
+      "id": "jakubkrehel",
+      "repository": "jakubkrehel/skills",
+      "branch": "main",
+      "scope": "",
+      "skill_roots": [
+        "skills/"
+      ],
+      "license_note": "MIT"
+    },
+    {
+      "id": "davidondrej",
+      "repository": "davidondrej/skills",
+      "branch": "main",
+      "scope": "",
+      "skill_roots": [
+        "skills/"
+      ],
+      "license_note": "MIT; personal tool/account assumptions require review"
+    },
+    {
+      "id": "ibelick",
+      "repository": "ibelick/ui-skills",
+      "branch": "main",
+      "scope": "",
+      "skill_roots": [
+        "skills/"
+      ],
+      "license_note": "MIT"
+    }
+  ]
+}

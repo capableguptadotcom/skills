@@ -1,0 +1,558 @@
+{
+  "schema_version": 1,
+  "observed_on": "2026-10-30",
+  "evaluation_type": "single-run forward smoke test",
+  "reviewer": "independent child agent previously assigned the pstack source review",
+  "blind_conditions": {
+    "rubric_read": false,
+    "root_conclusions_read": false,
+    "input_materials": [
+      "skills/kp-start/SKILL.md",
+      "eval/prompts.json",
+      "skills/kp-review/SKILL.md",
+      "skills/kp-debug/SKILL.md",
+      "skills/kp-verify-change/SKILL.md",
+      "isolated fixture source and Git state"
+    ]
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.3",
+    "bytecode_writes_disabled": true
+  },
+  "skill_sha256": {
+    "skills/kp-start/SKILL.md": "7c6c2ce7cc98225d9f5982fc4db77bad0a0fa68b8b1dcc4e1854b7931d347cd8",
+    "skills/kp-review/SKILL.md": "5b0082fa3b3771d92b0995261bf62b3b0ac301e7778903d934995410d84c070f",
+    "skills/kp-debug/SKILL.md": "58afcb53d672766f5f505aea7cf2a65737fa992432d4d5de8bcf73e9717d511f",
+    "skills/kp-verify-change/SKILL.md": "b17552f3b5b9f40e0b4d8d5396ca5794c387ef72e0e17564ddebf07bf17d4a62"
+  },
+  "routing_responses": [
+    {
+      "id": "route-01",
+      "prompt": "We settled the API and the acceptance criteria yesterday. Implement the agreed small change now.",
+      "primary_skill": null,
+      "primary_activity": "direct implementation",
+      "scope_boundary": "Carry forward the settled API and acceptance criteria; do not restart an interview or impose a planning phase."
+    },
+    {
+      "id": "route-02",
+      "prompt": "Review this PR for correctness. Do not edit or post comments.",
+      "primary_skill": "kp-review",
+      "primary_activity": "review",
+      "scope_boundary": "Inspect and report only; do not edit, post comments, or merge."
+    },
+    {
+      "id": "route-03",
+      "prompt": "Find why retries stop after the first failure, but leave the code untouched.",
+      "primary_skill": "kp-debug",
+      "primary_activity": "diagnosis",
+      "scope_boundary": "Reproduce and explain the retry failure without changing code."
+    },
+    {
+      "id": "route-04",
+      "prompt": "Build this feature test-first using the existing test runner.",
+      "primary_skill": "kp-tdd",
+      "primary_activity": "test-first implementation",
+      "scope_boundary": "Use the existing runner and observable behavior; implement the requested feature with failing-then-passing evidence."
+    },
+    {
+      "id": "route-05",
+      "prompt": "Help me pressure-test an idea for a patient appointment reminder product.",
+      "primary_skill": "kp-grill-idea",
+      "primary_activity": "idea pressure testing",
+      "scope_boundary": "Explore user needs, assumptions, scope, and uncertainty; do not start product implementation."
+    },
+    {
+      "id": "route-06",
+      "prompt": "Plan the migration from our current identifier type to the agreed new identifier.",
+      "primary_skill": "kp-change-plan",
+      "primary_activity": "migration planning",
+      "scope_boundary": "Use the already agreed identifier destination; deliver a scoped plan rather than execute it."
+    },
+    {
+      "id": "route-07",
+      "prompt": "Clean up this changed function without changing its behavior.",
+      "primary_skill": "kp-simplify",
+      "primary_activity": "behavior-preserving cleanup",
+      "scope_boundary": "Limit changes to the changed function and preserve its contract."
+    },
+    {
+      "id": "route-08",
+      "prompt": "Before we add a framework, find the smallest way to satisfy these requirements.",
+      "primary_skill": "kp-minimalist",
+      "primary_activity": "approach selection",
+      "scope_boundary": "Inspect existing options and requirements before recommending new machinery; do not add a framework merely to compare it."
+    },
+    {
+      "id": "route-09",
+      "prompt": "Measure this function's cyclomatic complexity and explain which paths matter.",
+      "primary_skill": "kp-complexity",
+      "primary_activity": "complexity analysis",
+      "scope_boundary": "Measure and explain consequential paths; do not rewrite the function merely to lower a number."
+    },
+    {
+      "id": "route-10",
+      "prompt": "Critique the existing checkout screen's usability and keyboard flow.",
+      "primary_skill": "kp-ui-review",
+      "primary_activity": "UI assessment",
+      "scope_boundary": "Assess the existing checkout including keyboard behavior; do not redesign or implement fixes unless requested."
+    },
+    {
+      "id": "route-11",
+      "prompt": "Document the behavior our retry worker currently implements.",
+      "primary_skill": "kp-docs",
+      "primary_activity": "implemented-behavior documentation",
+      "scope_boundary": "Document what the worker currently does and distinguish observed behavior from intended changes."
+    },
+    {
+      "id": "route-12",
+      "prompt": "Research whether this library version supports resumable uploads; cite the official implementation or docs.",
+      "primary_skill": "kp-research",
+      "primary_activity": "technical research",
+      "scope_boundary": "Pin the named library version and cite primary implementation or documentation; do not infer current support from a different version."
+    },
+    {
+      "id": "route-13",
+      "prompt": "Simulate a maintainer, product engineer, and evaluator debating this design.",
+      "primary_skill": "kp-simulate-discussion",
+      "primary_activity": "simulated expert discussion",
+      "scope_boundary": "Use distinct role perspectives and label them simulated; do not invent real quotations or implement the design."
+    },
+    {
+      "id": "route-14",
+      "prompt": "Compare two possible interfaces for the cache module using real caller examples.",
+      "primary_skill": "kp-api-design",
+      "primary_activity": "interface design",
+      "scope_boundary": "Compare two candidate interfaces with actual caller usage; do not implement either without implementation scope."
+    },
+    {
+      "id": "route-15",
+      "prompt": "Our code uses booking, reservation, and hold inconsistently. Clarify the domain rules.",
+      "primary_skill": "kp-domain-model",
+      "primary_activity": "domain clarification",
+      "scope_boundary": "Reconcile terms and rules from evidence; leave unresolved product decisions explicit instead of silently renaming code."
+    },
+    {
+      "id": "route-16",
+      "prompt": "Build a throwaway prototype to see whether this state transition feels understandable.",
+      "primary_skill": "kp-prototype",
+      "primary_activity": "bounded design experiment",
+      "scope_boundary": "Build a disposable experiment for the named transition uncertainty, without turning it into a production feature."
+    },
+    {
+      "id": "route-17",
+      "prompt": "Resolve the current rebase conflicts while keeping the intended behavior of both changes.",
+      "primary_skill": "kp-merge-conflicts",
+      "primary_activity": "active conflict resolution",
+      "scope_boundary": "Resolve the in-progress rebase while preserving both changes intent; do not discard unrelated work or widen scope."
+    },
+    {
+      "id": "route-18",
+      "prompt": "Prepare a continuation note for tomorrow's session; do not message anyone.",
+      "primary_skill": "kp-handoff",
+      "primary_activity": "continuation note",
+      "scope_boundary": "Write the continuation state without messaging anyone."
+    },
+    {
+      "id": "route-19",
+      "prompt": "Prove the changed upload flow works at this revision and report anything untested.",
+      "primary_skill": "kp-verify-change",
+      "primary_activity": "behavioral verification",
+      "scope_boundary": "Identify the tested revision, exercise the actual changed upload path where permitted, and report untested areas."
+    },
+    {
+      "id": "route-20",
+      "prompt": "Review this upstream skill update before changing our curated wording.",
+      "primary_skill": "kp-skill-maintenance",
+      "primary_activity": "upstream skill review",
+      "scope_boundary": "Assess the update and its effect before changing curated wording; do not overwrite the skill just because upstream changed."
+    },
+    {
+      "id": "route-21",
+      "prompt": "What's a good metaphor for autumn?",
+      "primary_skill": null,
+      "primary_activity": "ordinary creative conversation",
+      "scope_boundary": "The prompt is outside software routing; answer without loading a development specialist."
+    },
+    {
+      "id": "route-22",
+      "prompt": "Fix the typo 'recieve' in this README.",
+      "primary_skill": null,
+      "primary_activity": "direct small edit",
+      "scope_boundary": "Correct only the typo in the README; no planning, broad rewrite, or mandatory specialist is needed."
+    },
+    {
+      "id": "route-23",
+      "prompt": "Use kp-debug to investigate this failing command. Do not start an architecture redesign.",
+      "primary_skill": "kp-debug",
+      "primary_activity": "explicitly selected diagnosis",
+      "scope_boundary": "Respect the named skill and investigate the failing command without architecture redesign."
+    },
+    {
+      "id": "route-24",
+      "prompt": "I only installed kp-start. Can you review this diff?",
+      "primary_skill": null,
+      "primary_activity": "review with unavailable specialist fallback",
+      "scope_boundary": "Explain once that kp-review is unavailable, then review directly using available instructions; do not install it or claim it was loaded."
+    }
+  ],
+  "executions": {
+    "review-only": {
+      "hashes_before": {
+        "cart.py": "a3b0e88e3ea52fc3e11faaae558c6c78b94ae4fbf58305f969cf1d23eca91846",
+        "test_cart.py": "6a1c79a3d94334e8b78f498f8186cfd743f049017e306bddab10dc6b1f86d833"
+      },
+      "baseline_commands": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "exit_code": 0,
+          "stdout": "2ebbf1205e1eb9dba31fe592344d1dece0506884\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "status",
+            "--short"
+          ],
+          "exit_code": 0,
+          "stdout": " M cart.py\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "diff"
+          ],
+          "exit_code": 0,
+          "stdout": "diff --git a/cart.py b/cart.py\nindex 8744697..1eda68c 100644\n--- a/cart.py\n+++ b/cart.py\n@@ -1,2 +1,2 @@\n def total(items):\n-    return sum(item['price'] * item['quantity'] for item in items)\n+    return sum(item['price'] for item in items)\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "python",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-v"
+          ],
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "test_one_item (test_cart.CartTests.test_one_item) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n"
+        },
+        {
+          "argv": [
+            "python",
+            "-B",
+            "-c",
+            "from cart import total; actual=total([{'price':5,'quantity':2}]); print('quantity=2 actual=',actual,'expected=10'); assert actual == 10"
+          ],
+          "exit_code": 1,
+          "stdout": "quantity=2 actual= 5 expected=10\n",
+          "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAssertionError\n"
+        }
+      ],
+      "after_commands": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "exit_code": 0,
+          "stdout": "2ebbf1205e1eb9dba31fe592344d1dece0506884\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "status",
+            "--short"
+          ],
+          "exit_code": 0,
+          "stdout": " M cart.py\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "diff"
+          ],
+          "exit_code": 0,
+          "stdout": "diff --git a/cart.py b/cart.py\nindex 8744697..1eda68c 100644\n--- a/cart.py\n+++ b/cart.py\n@@ -1,2 +1,2 @@\n def total(items):\n-    return sum(item['price'] * item['quantity'] for item in items)\n+    return sum(item['price'] for item in items)\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "python",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-v"
+          ],
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "test_one_item (test_cart.CartTests.test_one_item) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n"
+        },
+        {
+          "argv": [
+            "python",
+            "-B",
+            "-c",
+            "from cart import total; actual=total([{'price':5,'quantity':2}]); print('quantity=2 actual=',actual,'expected=10'); assert actual == 10"
+          ],
+          "exit_code": 1,
+          "stdout": "quantity=2 actual= 5 expected=10\n",
+          "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAssertionError\n"
+        }
+      ],
+      "hashes_after": {
+        "cart.py": "a3b0e88e3ea52fc3e11faaae558c6c78b94ae4fbf58305f969cf1d23eca91846",
+        "test_cart.py": "6a1c79a3d94334e8b78f498f8186cfd743f049017e306bddab10dc6b1f86d833"
+      },
+      "files_unchanged": true,
+      "task": "Review the uncommitted change for correctness; do not edit or post anything.",
+      "primary_skill": "kp-review",
+      "outcome": "review delivered; fixture unchanged",
+      "findings": [
+        {
+          "location": "cart.py:2",
+          "severity": "high",
+          "title": "Preserve quantity in cart totals",
+          "trigger": "total([{'price': 5, 'quantity': 2}])",
+          "actual": 5,
+          "expected": 10,
+          "explanation": "The uncommitted change removes quantity multiplication. Every item with quantity greater than one is undercounted. The existing single-quantity test passes and does not cover this regression."
+        }
+      ],
+      "scope_preserved": true,
+      "external_actions_performed": []
+    },
+    "diagnosis-only": {
+      "hashes_before": {
+        "settings.py": "eecb24ccf76469de739da7fd9124cd13122478218225bfc727c8ec8ab953afde"
+      },
+      "baseline_commands": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "exit_code": 0,
+          "stdout": "a322dc5c45cdf1f00549db1fe814ffa5e2cf1603\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "status",
+            "--short"
+          ],
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "python",
+            "-B",
+            "-c",
+            "from settings import timeout_seconds; print('None:',timeout_seconds(None)); print('0:',timeout_seconds(0)); print('5:',timeout_seconds(5)); print('empty string:',timeout_seconds(''))"
+          ],
+          "exit_code": 0,
+          "stdout": "None: 30\n0: 30\n5: 5\nempty string: 30\n",
+          "stderr": ""
+        }
+      ],
+      "after_commands": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "exit_code": 0,
+          "stdout": "a322dc5c45cdf1f00549db1fe814ffa5e2cf1603\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "status",
+            "--short"
+          ],
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "python",
+            "-B",
+            "-c",
+            "from settings import timeout_seconds; print('None:',timeout_seconds(None)); print('0:',timeout_seconds(0)); print('5:',timeout_seconds(5)); print('empty string:',timeout_seconds(''))"
+          ],
+          "exit_code": 0,
+          "stdout": "None: 30\n0: 30\n5: 5\nempty string: 30\n",
+          "stderr": ""
+        }
+      ],
+      "hashes_after": {
+        "settings.py": "eecb24ccf76469de739da7fd9124cd13122478218225bfc727c8ec8ab953afde"
+      },
+      "files_unchanged": true,
+      "task": "timeout_seconds(0) returns 30, but zero should be preserved; diagnose only, do not change files.",
+      "primary_skill": "kp-debug",
+      "outcome": "cause established; fixture unchanged",
+      "diagnosis": "settings.py:2 uses value or 30. Python treats zero as false, so the fallback is selected for zero as well as None. Nonzero input 5 survives, which distinguishes a falsiness fallback from a function that always returns 30.",
+      "proposed_correction": "If None is the only missing-value sentinel, return 30 if value is None else value. This is a proposal only; no correction was applied.",
+      "remaining_uncertainty": "The task establishes that zero must be preserved but does not establish validation policy for empty strings or other nonnumeric inputs.",
+      "scope_preserved": true,
+      "external_actions_performed": []
+    },
+    "implement-agreed": {
+      "hashes_before": {
+        "cart.py": "a3b0e88e3ea52fc3e11faaae558c6c78b94ae4fbf58305f969cf1d23eca91846",
+        "test_cart.py": "6a1c79a3d94334e8b78f498f8186cfd743f049017e306bddab10dc6b1f86d833"
+      },
+      "baseline_commands": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "exit_code": 0,
+          "stdout": "2ebbf1205e1eb9dba31fe592344d1dece0506884\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "status",
+            "--short"
+          ],
+          "exit_code": 0,
+          "stdout": " M cart.py\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "python",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-v"
+          ],
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "test_one_item (test_cart.CartTests.test_one_item) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n"
+        },
+        {
+          "argv": [
+            "python",
+            "-B",
+            "-c",
+            "from cart import total; actual=total([{'price':5,'quantity':3},{'price':4,'quantity':2}]); print('mixed quantities actual=',actual,'expected=23'); assert actual == 23"
+          ],
+          "exit_code": 1,
+          "stdout": "mixed quantities actual= 9 expected=23\n",
+          "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAssertionError\n"
+        }
+      ],
+      "regression_before_fix": {
+        "argv": [
+          "python",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-v"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "test_multiple_quantities (test_cart.CartTests.test_multiple_quantities) ... FAIL\ntest_one_item (test_cart.CartTests.test_one_item) ... ok\n\n======================================================================\nFAIL: test_multiple_quantities (test_cart.CartTests.test_multiple_quantities)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"<fixtures>\\implement-agreed\\test_cart.py\", line 9, in test_multiple_quantities\n    self.assertEqual(total([\nAssertionError: 9 != 23\n\n----------------------------------------------------------------------\nRan 2 tests in 0.001s\n\nFAILED (failures=1)\n"
+      },
+      "after_commands": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "exit_code": 0,
+          "stdout": "2ebbf1205e1eb9dba31fe592344d1dece0506884\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "status",
+            "--short"
+          ],
+          "exit_code": 0,
+          "stdout": " M test_cart.py\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "python",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-v"
+          ],
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "test_multiple_quantities (test_cart.CartTests.test_multiple_quantities) ... ok\ntest_one_item (test_cart.CartTests.test_one_item) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.000s\n\nOK\n"
+        },
+        {
+          "argv": [
+            "python",
+            "-B",
+            "-c",
+            "from cart import total; actual=total([{'price':5,'quantity':3},{'price':4,'quantity':2}]); print('mixed quantities actual=',actual,'expected=23'); assert actual == 23"
+          ],
+          "exit_code": 0,
+          "stdout": "mixed quantities actual= 23 expected=23\n",
+          "stderr": ""
+        }
+      ],
+      "hashes_after": {
+        "cart.py": "d8a6d6ef187e82c2af63bdc9eda558b040f05061dd3505ef11faf8fbac75900d",
+        "test_cart.py": "2be7c99accb0493a2e630db2d0967c69bd81c611051bf693c5298414efe0279c"
+      },
+      "files_unchanged": false,
+      "task": "We agreed cart totals multiply each item price by its quantity, including quantities greater than one. Implement that behavior now and verify with the existing unittest runner.",
+      "primary_skill": null,
+      "primary_activity": "direct agreed implementation",
+      "verification_guidance": "kp-debug for causal check and kp-verify-change for behavioral evidence were read; no interview, planning phase, or additional agent was used.",
+      "outcome": "agreed behavior implemented and checked",
+      "changed_files": [
+        "cart.py",
+        "test_cart.py"
+      ],
+      "change": "Multiply each item price by its quantity. Add a behavioral regression for prices 5 and 4 with quantities 3 and 2, expected total 23.",
+      "scope_preserved": true,
+      "external_actions_performed": []
+    }
+  },
+  "limitations": [
+    "One reviewer and one run; no repeated trials or no-skill baseline.",
+    "Router instructions and task-specific skills were explicitly supplied; this does not test automatic host discovery.",
+    "The 24 routing responses are judgments made from the router, not 24 executed end-to-end task runs.",
+    "The three executed Python fixtures are deliberately small; no UI, remote service, publishing, production, or long-running task was exercised.",
+    "File hashes cover all regular fixture files outside .git. Git HEAD, status, and review diff were also captured; this is not a byte-for-byte audit of Git metadata.",
+    "The proposed checks in the pstack source review remain unrun; these fixtures exercise the new personal pack only.",
+    "No claim of measured uplift, causal effectiveness, or general quality follows from these observations."
+  ]
+}
