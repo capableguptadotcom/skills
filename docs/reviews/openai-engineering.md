@@ -629,4 +629,3 @@ The simulated participants are an engineering practitioner, who assesses executi
 ## Evidence still needed
 
 Before promotion, run held-out trigger/negative-trigger cases, user overrides, missing-tool and interruption cases, and paired task runs against the existing owner and a competent no-skill baseline. Log actual files read, artifact correctness, omitted criteria, latency and measured usage. Seed graders with deliberately wrong outputs. These are proposed checks and were not run by this source review.
-
