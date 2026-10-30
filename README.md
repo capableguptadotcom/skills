@@ -53,6 +53,7 @@ The initial public inventory contains **815 skill entrypoints across 11 sources*
 - [Primary evidence and issue discussions](docs/evidence.md): experiments, reported failures, licenses, and confidence limits.
 - [Evaluation and promotion](docs/evaluation.md): what establishes a useful skill and what does not.
 - [Observed forward smoke tests](docs/forward-testing.md): actual outcomes, preserved scope, and limits.
+- [Validation record](docs/validation.md): installer discovery, provenance checks, live updater, and CI.
 
 Source assessments are not proof of improvement. Some long community entrypoints were assessed through procedure/constraint excerpts; most vendor/domain-specific OpenAI entries receive description-level inventory and provisional optional/deferred decisions. The evidence level and inspection depth are recorded. Simulated discussions are written arguments, not independent experiments.
 
