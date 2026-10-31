@@ -1,0 +1,28 @@
+{
+  "checks": [
+    {
+      "name": "lease uniqueness",
+      "command": "python -B verification/model.py",
+      "covered": ["lease.py:Lease.__init__", "lease.py:Lease.claim"],
+      "confirmed_commit": "7a18e84d099e399f80ff427a8c5962e2c0969171",
+      "previous_confirmed_commit": "95897e1dd5735d9446cad43fee48f6b4bee15c5e",
+      "bound": "two workers, one claim each; six event orders for each of initially free and occupied leases",
+      "correspondence": "updated model; read/checkpoint and resume/write steps inspected and all 12 outcomes replayed against shipped code",
+      "status": ["needed update", "matches current code", "exposes product bug"],
+      "property": "at most one successful claim for an initially free lease; none for an initially occupied lease",
+      "result": "FAIL: four of six initially-free schedules return True to both workers; occupied cases all return False",
+      "assumptions": ["single event loop", "checkpoint suspends then returns normally", "no cancellation or exceptions", "no external owner writers"],
+      "sensitivity_command": "python -B verification/sensitivity.py",
+      "sensitivity_result": "PASS: in-memory clean control has zero violations; deliberately restoring stale-read ordering has four violations; product files untouched"
+    },
+    {
+      "name": "archive conservation",
+      "command": "proof-runner archive.proof",
+      "covered": ["archive adapter (external)"],
+      "confirmed_commit": "95897e1dd5735d9446cad43fee48f6b4bee15c5e",
+      "bound": "external profile",
+      "status": ["blocked"],
+      "result": "UNTESTED: proof-runner unavailable and external adapter/proof source not present; old correspondence anchor retained"
+    }
+  ]
+}

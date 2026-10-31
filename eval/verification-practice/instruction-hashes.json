@@ -1,0 +1,10 @@
+{
+  "algorithm": "sha256",
+  "meaning": "Exact instruction bytes used in the explicit-invocation smoke tests; unchanged while trials ran.",
+  "files": {
+    "skills/kp-develop/SKILL.md": "10d0aaae43b9a4f4db97aff5f3a21b3ffa8bdb9de8cf6f13f559344fa37817d3",
+    "skills/kp-develop/references/testing.md": "4faa9af46e21fc87db37f38ff36488ef679b38bbd734291cce2cd798184ec514",
+    "skills/kp-develop/references/properties.md": "0c33d32602b780cb22cdeea2e9f68a884832e62491a635d5d4792aece1cd6e31",
+    "skills/kp-develop/references/project-verification.md": "c49e86add9f1757e1de2e26049bbe0bd1a0bcdafdf2324f3d91ff17e40c58186"
+  }
+}

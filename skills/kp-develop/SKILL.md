@@ -12,6 +12,8 @@ Choose the least new machinery that meets the full requirement. Look for existin
 Use the relevant detail only when needed:
 
 - For test-first work, behavioral regression, runtime/UI proof or performance evidence, read [testing and verification](references/testing.md).
+- For a requested reusable app-verification recipe or maintenance of one, read [project verification](references/project-verification.md).
+- For requested formal/property verification or an existing model that may have drifted, read [properties and model fidelity](references/properties.md).
 - For documentation as the requested deliverable, read [documentation](references/documentation.md).
 - For an active merge/rebase conflict, read [conflicts](references/conflicts.md).
 

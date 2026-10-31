@@ -1,0 +1,2 @@
+# Notes API
+Start with `python server.py --data-dir <empty-directory> --port <unused-port>`. The server prints its chosen port. GET /health reports process health. GET /notes lists saved notes. POST /notes with JSON {"title":"..."} creates a note. Data is durable in notes.json under the selected directory. The first startup initializes data asynchronously. No dependencies outside the Python standard library.

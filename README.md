@@ -17,6 +17,8 @@ The names identify different activities, not mandatory stages. A typo does not n
 
 TDD, API/domain design, prototyping, UI assessment, documentation and conflict resolution remain available as guidance within these workflows. They no longer compete as separate installed skills. Each skill is self-contained; conditional references live inside its folder and are read only when needed.
 
+The workflows apply across TypeScript, JavaScript and Python. Load language, framework or tool detail only when the procedure differs. See the [language and ownership policy](docs/language-and-ownership.md) and [map of familiar Wellnest capabilities](docs/capability-map.md).
+
 ## Use
 
 ```sh
@@ -32,6 +34,8 @@ The shared [skills CLI](https://github.com/vercel-labs/skills) currently require
 [The simulated discussion and disposition table](docs/daily-pack-decision.md) explain what stayed, what was combined, and what was removed from the previous 20-skill pack. Eight is a starting composition, not an empirically optimal number. A skill earns its place by improving a recognizable task or preventing a demonstrated failure beyond the host's existing instructions.
 
 Upstream collections informed the initial research; they do not define our roadmap or update our wording automatically. The old catalog and synchronization machinery are preserved in the [historical audit tag](https://github.com/capableguptadotcom/skills/tree/upstream-audit-2026-10-31), outside the current working tree. See [provenance](docs/provenance.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
+
+The [pstack-first review](docs/pstack-first-review.md) examines each of its 58 skills, actual PR-driven revisions, portability, overlap and proposed adoption boundaries. This research stays outside installed skill discovery. Requested runtime recipes and property/model maintenance are conditional modes of delivery, with project-specific operational knowledge kept in the project that owns it.
 
 ## Maintain our instructions
 
