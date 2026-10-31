@@ -4130,8 +4130,8 @@
       }
     },
     "mattpocock": {
-      "commit": "a496f5513d4a4cf889bc48e189e579f4b0bdf6aa",
-      "tree_sha256": "8c0bfe5156c18e61b528ce36a1285a22e60518e24717d0fffb39a00ba0601430",
+      "commit": "4ae2317ddb22b046e26455e4f9c9b3aaaf62212d",
+      "tree_sha256": "44a8d91b2711ee933cb43829030c88d6465819c2e20551c4383eebe36e48e0f1",
       "files": {
         ".agents/adr/0001-explicit-setup-pointer-only-for-hard-dependencies.md": {
           "sha": "56b348d9fea2d7ee2e326fe1838215d0c94c413b",
@@ -4163,6 +4163,11 @@
           "mode": "100644",
           "kind": "blob"
         },
+        ".changeset/chief-of-staff-shared-wiki-procedures.md": {
+          "sha": "d585a36631cb75c0f7d4820d72915a5701dddfb9",
+          "mode": "100644",
+          "kind": "blob"
+        },
         ".changeset/config.json": {
           "sha": "06c7350518b33bdaedd0eae254f75fd887f16963",
           "mode": "100644",
@@ -4170,6 +4175,11 @@
         },
         ".changeset/implementer-fresh-per-ticket.md": {
           "sha": "ac08d503310bbecd29caa95b8cce05bd3f160b2d",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        ".changeset/software-factory-skill.md": {
+          "sha": "0af455018c4e0a2deb28dcbc581a024bea93f853",
           "mode": "100644",
           "kind": "blob"
         },
@@ -4784,12 +4794,12 @@
           "kind": "blob"
         },
         "skills/in-progress/README.md": {
-          "sha": "792ebaa0aecbc24bf02742558df8873c9df72af2",
+          "sha": "a7352637389c97be31823c87186421385ff83466",
           "mode": "100644",
           "kind": "blob"
         },
         "skills/in-progress/chief-of-staff/SKILL.md": {
-          "sha": "8ea0f468c8c05fb14f0e4d0cfa282c78b92a3319",
+          "sha": "22f0b6626f07bfdfa78b70d006742dfa2260e9c4",
           "mode": "100644",
           "kind": "blob"
         },
@@ -4830,6 +4840,36 @@
         },
         "skills/in-progress/setup-ts-deep-modules/dependency-cruiser.config.cjs": {
           "sha": "54030ede7d36b7f72fc0f645fa414efa9b6f63ed",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "skills/in-progress/software-factory/EXAMPLE-TASKS.md": {
+          "sha": "fc0972bd5f1bce4a9bc8b918e6666757d6218835",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "skills/in-progress/software-factory/GIT-HOSTS.md": {
+          "sha": "2c886f0d6c0a8ed17100d1ee7f94da4a07599a18",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "skills/in-progress/software-factory/OBSERVABILITY-PLATFORMS.md": {
+          "sha": "6eceea324a0ec64c1313020107517e3fb8af8d96",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "skills/in-progress/software-factory/RUNNERS.md": {
+          "sha": "18c0be3d2397d1e9cefaf92870fbe3cf905b4a68",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "skills/in-progress/software-factory/SKILL.md": {
+          "sha": "c60583aa2030d3eea42a3bbb85126c79c8a6eaea",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "skills/in-progress/software-factory/TICKET-TRACKERS.md": {
+          "sha": "ffae0bd22e419b89cbd2d822a7d35d1a90e14e22",
           "mode": "100644",
           "kind": "blob"
         },
@@ -35973,21 +36013,21 @@
       }
     },
     "addyosmani": {
-      "commit": "eb07f19f52c2669f2364897aaa293e2aaddd7b1c",
-      "tree_sha256": "23b68090b7ff04f33770db5c1bfd91badee24e64b470960fcdea8afcc99c7c5a",
+      "commit": "8bfcc1f9916f2eea55494d8c1fa7f4bde867dd9e",
+      "tree_sha256": "b6668ef2fb7cfe32ba3fdf7bb13d58b3af08972fd014ccf3e599717fdba6ac31",
       "files": {
         ".agents/plugins/marketplace.json": {
-          "sha": "16ed16ffb5b5eb5b8f16bb40b882e8850db9cc34",
+          "sha": "1f0be075edc6b8235b5a81e6d9c3196fdb3cd758",
           "mode": "100644",
           "kind": "blob"
         },
         ".claude-plugin/marketplace.json": {
-          "sha": "c276977adcc00c765cb1507915b98aa4ec94e19e",
+          "sha": "ebb6d5ab56653cdc09add52b0ba61029e0a1d422",
           "mode": "100644",
           "kind": "blob"
         },
         ".claude-plugin/plugin.json": {
-          "sha": "b0229caf022d072cc53b35c3bf1f031951819a0c",
+          "sha": "679485e288023b265350289bc0860d5c625dd57a",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36042,7 +36082,7 @@
           "kind": "blob"
         },
         ".codex-plugin/plugin.json": {
-          "sha": "f37d880b4ed4fa61aac12bdbaf140bdb0b84e83f",
+          "sha": "81bc4e233d307d815b97f7f50145d3b0cd5e649d",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36102,7 +36142,7 @@
           "kind": "blob"
         },
         ".github/workflows/test-plugin-install.yml": {
-          "sha": "b25ba319a8d371c6c1924f8b75173bb319313ab2",
+          "sha": "534b968fc4484fcd67c98b9b1e9e1d230a6f58ff",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36292,7 +36332,7 @@
           "kind": "blob"
         },
         "evals/README.md": {
-          "sha": "e9fcf25a83852f0a9d5dae11d1bad947471fe76d",
+          "sha": "56c810ee7f2f88243e06df2fbb253872df782d7e",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36327,7 +36367,7 @@
           "kind": "blob"
         },
         "evals/cases/context-engineering.json": {
-          "sha": "efb5e28c1a4dce2fde5dfc63c9dfdfe7b814d5c7",
+          "sha": "e18ce9e228d1bfc7c85ee0e7f9c6028ad37984dd",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36357,7 +36397,7 @@
           "kind": "blob"
         },
         "evals/cases/git-workflow-and-versioning.json": {
-          "sha": "c6b5aa0873c7fc1b5eb45936a92a41d04a155c70",
+          "sha": "0cc72d039c49f57193a36a62249fbecf8dc25f39",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36412,7 +36452,7 @@
           "kind": "blob"
         },
         "evals/cases/test-driven-development.json": {
-          "sha": "483ae7c1e62af575da84e14ed91e1094560ed014",
+          "sha": "eda6174e6bbedce7251091e6b225b56ffa166c4e",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36468,6 +36508,11 @@
         },
         "evals/fixtures/code-simplification/config-parser.test.js": {
           "sha": "784a043f53fb97920239a1d02b1e6e2f984648c3",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "evals/fixtures/context-budget/budget-notes.md": {
+          "sha": "2f40950b951baa5ecedd37a1289775ca49c5a3e6",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36641,6 +36686,26 @@
           "mode": "100644",
           "kind": "blob"
         },
+        "evals/fixtures/test-driven-development-persistence/BUG.md": {
+          "sha": "a3ccf891fc27307a90c0dfe672885b647d46f6a3",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "evals/fixtures/test-driven-development-persistence/README.md": {
+          "sha": "57955f71759b0e9e65a54506f8f3caa998f65e08",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "evals/fixtures/test-driven-development-persistence/test_vault.py": {
+          "sha": "31b8a0c91fa95a8fc4d390d6922a959aea80539a",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "evals/fixtures/test-driven-development-persistence/vault.py": {
+          "sha": "ba2caa5231f957be45451b2ea0eb9fa150709025",
+          "mode": "100644",
+          "kind": "blob"
+        },
         "evals/fixtures/test-driven-development/BUG.md": {
           "sha": "782f7d32ffe4309cf754c22bd133c7a13556aebb",
           "mode": "100644",
@@ -36682,7 +36747,7 @@
           "kind": "blob"
         },
         "evals/plugin/code-review-fires/graders/skill-fired.md": {
-          "sha": "37da62c3ecca583bcb2055b5fba4b57d691b3fda",
+          "sha": "b3d99df074d4ac93022afba8c5267d04f939945d",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36692,7 +36757,7 @@
           "kind": "blob"
         },
         "evals/plugin/code-review-stays-quiet-on-commit-message/graders/not-fired.md": {
-          "sha": "097f567422a326301d9d40aa9e527715afcbf791",
+          "sha": "c27388ab6b8f68d21f116d4a4d6ff65b80fe4895",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36702,17 +36767,42 @@
           "kind": "blob"
         },
         "evals/plugin/code-review-stays-quiet/graders/not-fired.md": {
-          "sha": "097f567422a326301d9d40aa9e527715afcbf791",
+          "sha": "c27388ab6b8f68d21f116d4a4d6ff65b80fe4895",
           "mode": "100644",
           "kind": "blob"
         },
         "evals/plugin/code-review-stays-quiet/graders/tdd-fired.md": {
-          "sha": "ca279cd0a1fdd708f13691ddc62b7cb4f3ab5b46",
+          "sha": "b4a413948f379d89b9538f5b629c70f46b5d3f56",
           "mode": "100644",
           "kind": "blob"
         },
         "evals/plugin/code-review-stays-quiet/prompt.md": {
           "sha": "721882ecbe8842b99ac5ed388e600325c67adb17",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "evals/plugin/gitflow-fires-on-commit-message/graders/skill-fired.md": {
+          "sha": "41d79e7db32695b8b2bfb08305f223c0967d67ee",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "evals/plugin/gitflow-fires-on-commit-message/graders/typed-why-and-split.md": {
+          "sha": "812d900ee4268caf2cacb3426eb523096ae2ce0b",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "evals/plugin/gitflow-fires-on-commit-message/prompt.md": {
+          "sha": "d7d5b867a31781956e2bb7700dcc152f6d4b06c3",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "evals/plugin/gitflow-stays-quiet-on-what-broke/graders/not-fired.md": {
+          "sha": "b5a783237b78f482a0dc8f9bb78cfd958dc1b934",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "evals/plugin/gitflow-stays-quiet-on-what-broke/prompt.md": {
+          "sha": "30bd3799c9518070b90352b490a5b3b78a2dc947",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36722,7 +36812,7 @@
           "kind": "blob"
         },
         "evals/plugin/simplify-fires-on-pasted-function/graders/skill-fired.md": {
-          "sha": "1396789e102538a68864649cfbd5d6fd590cc530",
+          "sha": "e24e54c8268e22ce438e1e9e14e91ee422f95012",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36732,7 +36822,7 @@
           "kind": "blob"
         },
         "evals/plugin/simplify-stays-quiet-on-make-it-fast/graders/not-fired.md": {
-          "sha": "deade600486d8171593fad9e7d8259224f41cd60",
+          "sha": "1878c6188f18a112778d5cea5627e3caa1adb2f5",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36747,7 +36837,7 @@
           "kind": "blob"
         },
         "evals/plugin/tdd-fires-on-pasted-bug/graders/skill-fired.md": {
-          "sha": "722dbb33dde9cb2993d82c520c41c5284e342401",
+          "sha": "ad7282b90c74f0486afb6a2d9d7d619d8aef9169",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36757,7 +36847,7 @@
           "kind": "blob"
         },
         "evals/plugin/tdd-stays-quiet-on-debug/graders/not-fired.md": {
-          "sha": "af95e3f73f20a69975e4533494435d61e33c1e10",
+          "sha": "1d3105ba234f70318f689109fec6ecc1e4194a33",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36807,22 +36897,22 @@
           "kind": "blob"
         },
         "hooks/simplify-ignore-test.sh": {
-          "sha": "d0b064b6295055dfd7ccde9cfbf09c3242a39e76",
+          "sha": "4db0e250841f5a688603cc410d7eb75e1fbbf53c",
           "mode": "100755",
           "kind": "blob"
         },
         "hooks/simplify-ignore.sh": {
-          "sha": "233870fa1b1c5a3401e1d3611261b366de00672b",
+          "sha": "e6babcafe62de1a2ff60402f690628016470cca1",
           "mode": "100755",
           "kind": "blob"
         },
         "plugin.json": {
-          "sha": "94ad60a304c44394362b2525c29d1354e6715d6b",
+          "sha": "8a9ac7100abdcb9ead294adc22aa7607cd22482e",
           "mode": "100644",
           "kind": "blob"
         },
         "references/accessibility-checklist.md": {
-          "sha": "18c97eff58d47a239cae66872a47e26e9fa8edbe",
+          "sha": "214ab49b504869227015bfd8eaaeb44e4355467e",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36847,7 +36937,7 @@
           "kind": "blob"
         },
         "references/security-checklist.md": {
-          "sha": "fc5e29b92c183fa69e0952b61a99761dc48b4c0b",
+          "sha": "910fbff3ff3ee67e343ef308fe224f95edb5b5ce",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36876,13 +36966,23 @@
           "mode": "100644",
           "kind": "blob"
         },
+        "scripts/quality-gate-test.js": {
+          "sha": "ce193af2b61f34eb0cf9eb46ac129b911ed52381",
+          "mode": "100644",
+          "kind": "blob"
+        },
         "scripts/run-evals-test.js": {
-          "sha": "f9d3a81228f2e366fc425e7fc4dd248cc8404296",
+          "sha": "73bdcd90145d5bc0c1119acf6ab5463b96fcdb5c",
           "mode": "100644",
           "kind": "blob"
         },
         "scripts/run-evals.js": {
-          "sha": "555026c4d09a22369d4cb536500051e085920411",
+          "sha": "9d2d8282bb73a381f358e91b81d60513c50d032a",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "scripts/staged-secret-scan-test.js": {
+          "sha": "e6aa00bdab5662a0435baa31e0f34c2f5cb9c070",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36937,7 +37037,7 @@
           "kind": "blob"
         },
         "skills/browser-testing-with-devtools/SKILL.md": {
-          "sha": "9864d2724e273e1164d62ab10b73590ae00fd6a8",
+          "sha": "ca0044e859e5637c33250dbba1fc1a24540b7ad3",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36957,7 +37057,7 @@
           "kind": "blob"
         },
         "skills/constraint-driven-development/SKILL.md": {
-          "sha": "e4f9f5dd68bc242c028ee518c4f7a7ce5a791d2d",
+          "sha": "d41ab055104f249d505fb6ea706e20b15f439a9f",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36966,8 +37066,13 @@
           "mode": "100644",
           "kind": "blob"
         },
+        "skills/constraint-driven-development/scripts/quality-gate.mjs": {
+          "sha": "33b33a728150b71a6ceccecfde09a59fc139d719",
+          "mode": "100644",
+          "kind": "blob"
+        },
         "skills/context-engineering/SKILL.md": {
-          "sha": "20b0b9a5b1f35c0144f4cb6e4bda6f4c7f1a92b0",
+          "sha": "abdfe2732255de944db13d0312a1634a425c7c5d",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36987,7 +37092,7 @@
           "kind": "blob"
         },
         "skills/doubt-driven-development/SKILL.md": {
-          "sha": "472c35ab9f32e8ec8b592e5cc7d228ad8cdce278",
+          "sha": "8e6d12737711d4926d87303ab0c111deb43ab8b2",
           "mode": "100644",
           "kind": "blob"
         },
@@ -36997,7 +37102,7 @@
           "kind": "blob"
         },
         "skills/git-workflow-and-versioning/SKILL.md": {
-          "sha": "0e03a2323ed3f0131626660c3142f69c4a6f8830",
+          "sha": "0cf257bcc172a0b508f5696352c8b4fa516c65b6",
           "mode": "100644",
           "kind": "blob"
         },
@@ -37057,17 +37162,17 @@
           "kind": "blob"
         },
         "skills/security-and-hardening/SKILL.md": {
-          "sha": "e80e1e9a4f5b2989308c376d4ea0d333fe2c26ef",
+          "sha": "fc85325b50e72b935f2916dd74af12c650e9c7f4",
           "mode": "100644",
           "kind": "blob"
         },
         "skills/security-and-hardening/references/hardening-patterns.md": {
-          "sha": "dbccfbf1d736bdf4baeafcd961f7ed062574d746",
+          "sha": "ad1d8fe783a605fef5be622c02062626cc06a948",
           "mode": "100644",
           "kind": "blob"
         },
         "skills/shipping-and-launch/SKILL.md": {
-          "sha": "f94bb48702bd250b7ad18c264a46d77b46ea115b",
+          "sha": "451b7f12638ebeb1ee9f96ce66b47f5e992696c8",
           "mode": "100644",
           "kind": "blob"
         },
@@ -37082,7 +37187,7 @@
           "kind": "blob"
         },
         "skills/test-driven-development/SKILL.md": {
-          "sha": "2f9c4bad747df3c88f3cd443b4990ab12d77b7d0",
+          "sha": "1937b9b9798d8986f4d979355565311bbaa7244f",
           "mode": "100644",
           "kind": "blob"
         },
@@ -37771,8 +37876,8 @@
       }
     },
     "davidondrej": {
-      "commit": "d5c727c82e55df04374888c1d708a1a65354d2ba",
-      "tree_sha256": "c53776f461c640db1f7f2731bb0f0d4dbced3c2fefa48d07086bb15a064bd141",
+      "commit": "8e90e9d634983e76e66154e6b36a11d735fd19da",
+      "tree_sha256": "c59aa1d8a9075dbf3a82a6b4a4320bc1455663c07a20646604166cddbc9e374b",
       "files": {
         ".gitignore": {
           "sha": "eaec04602a8b3da858f1c3ae9f13df67bc38aa48",
@@ -38345,7 +38450,7 @@
           "kind": "blob"
         },
         "skills/thinking-and-docs/adr-verbatim/SKILL.md": {
-          "sha": "e8a85ca993c77e7c9a16384052878ae25e3b95a5",
+          "sha": "d6631076e8bfa82f53419906ba0f2d02d61253bf",
           "mode": "100644",
           "kind": "blob"
         },
@@ -38492,8 +38597,8 @@
       }
     },
     "ibelick": {
-      "commit": "59193a75432e5f41c6980f53b9e6a7bd56919947",
-      "tree_sha256": "90f92635df05f6fc40bee937a3f3d6771874f6cb938deffeb3b19b682df6a1f7",
+      "commit": "b88b130b87af0570d46692fa9806ccbcbd5afec2",
+      "tree_sha256": "0676f17bc5022e55e6ddcb555ae38d12be66bf842d8bbbe8f518bc16246ce00c",
       "files": {
         ".dev.vars.example": {
           "sha": "c3890293cb16909305d2997dfd55776a4adf24fd",
@@ -38871,7 +38976,7 @@
           "kind": "blob"
         },
         "src/data/agent-skills-digests.json": {
-          "sha": "ae190aba3d481e2ab8316f812f782b292fc3f49e",
+          "sha": "5750cdc3110a0e494dc784b3fa9317e3c99976f2",
           "mode": "100644",
           "kind": "blob"
         },
@@ -38881,12 +38986,12 @@
           "kind": "blob"
         },
         "src/data/collections.ts": {
-          "sha": "6982de1b1a8cfb45c4a74f1816c584ae662274a6",
+          "sha": "9aeff54ee9497b946f0958d48bfadcfae97b411c",
           "mode": "100644",
           "kind": "blob"
         },
         "src/data/component-libraries.ts": {
-          "sha": "635b2e263b9c261ef392ab9af160a5f715171bac",
+          "sha": "5c653a445f767c57306bb1340c17065a25d5a9af",
           "mode": "100644",
           "kind": "blob"
         },
@@ -38900,8 +39005,13 @@
           "mode": "100644",
           "kind": "blob"
         },
+        "src/data/design-systems.ts": {
+          "sha": "c8aa4b7ffb7052d40693f9f8345c9428380f46f8",
+          "mode": "100644",
+          "kind": "blob"
+        },
         "src/data/directory-links.ts": {
-          "sha": "32e19df8751ef8566a95951b302a2d9d102c45a8",
+          "sha": "c4e4deb8ab0c5e29be1331cead2e16b157a03d88",
           "mode": "100644",
           "kind": "blob"
         },
@@ -38911,17 +39021,17 @@
           "kind": "blob"
         },
         "src/data/github-metadata.json": {
-          "sha": "06e65c0d79a4c647e837e2806520d2154472c7c1",
+          "sha": "b31a08c8c2ade7c7221997ff10780f3d37c7f0aa",
           "mode": "100644",
           "kind": "blob"
         },
         "src/data/github-resources.ts": {
-          "sha": "90fc0195573ba9a66ccd0c1db502a3a4e33f8b4c",
+          "sha": "97f640745cab931f646adf73c5e168014bfa9af4",
           "mode": "100644",
           "kind": "blob"
         },
         "src/data/icon-libraries.ts": {
-          "sha": "6d7a4b73b2be4fd969522a3ecd8eb427f9dec13d",
+          "sha": "4548c5b77b06abda89095e56949d77810b7ca366",
           "mode": "100644",
           "kind": "blob"
         },
@@ -38941,7 +39051,7 @@
           "kind": "blob"
         },
         "src/data/registry.ts": {
-          "sha": "127019e97253f093d4e2f4e08e9c7654eced4839",
+          "sha": "cb98360feff33c16d63729e54054f69ff0521dfc",
           "mode": "100644",
           "kind": "blob"
         },
@@ -38951,7 +39061,7 @@
           "kind": "blob"
         },
         "src/data/topics.ts": {
-          "sha": "1df710055f84257ce2489bba28cb7bbbe48e9423",
+          "sha": "e9d26d23deca61e2beebe8937f1f30bf2fb7a7ea",
           "mode": "100644",
           "kind": "blob"
         },
@@ -39246,7 +39356,7 @@
           "kind": "blob"
         },
         "src/pages/components/index.astro": {
-          "sha": "50beb1183f237f9e740c0bace753ce65cb6545da",
+          "sha": "9031c5e636ad9c0a3bfcde1a71ae300ce766054a",
           "mode": "100644",
           "kind": "blob"
         },
@@ -39256,7 +39366,17 @@
           "kind": "blob"
         },
         "src/pages/design-md/index.astro": {
-          "sha": "f94d19198f1e29e2b958c60ffc6dc8cd55d49ceb",
+          "sha": "d3890929223d1c1a9040b8830ac53fbc15b8c1b4",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "src/pages/design-systems/[collection].astro": {
+          "sha": "8058cd26c8d7cf50f811d74094b9152a2c1c176c",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "src/pages/design-systems/index.astro": {
+          "sha": "dde805bff6040251a3fb04125938db4b1b8f72ff",
           "mode": "100644",
           "kind": "blob"
         },
@@ -39266,7 +39386,7 @@
           "kind": "blob"
         },
         "src/pages/icons.astro": {
-          "sha": "c0ffbda9ec28c02b5507ddf3702805cf18017cb2",
+          "sha": "2e85110cee4c7f0f670583ca777835595f4db539",
           "mode": "100644",
           "kind": "blob"
         },
@@ -39381,7 +39501,7 @@
           "kind": "blob"
         },
         "src/pages/sitemap.xml.ts": {
-          "sha": "c2e5c7b97f8d8e67f5703cb245103316c4d48907",
+          "sha": "18652c51670b418f30733b18c630532cb8648bb3",
           "mode": "100644",
           "kind": "blob"
         },
@@ -39530,6 +39650,16 @@
           "mode": "100644",
           "kind": "blob"
         },
+        "src/ui/design-system-collection-nav.astro": {
+          "sha": "16f99d76fd7cd1f2ca59aa0f05399b417b47ae86",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "src/ui/design-system-directory.tsx": {
+          "sha": "48249191a0fe1abb3b5419171e7c490dc415b8e5",
+          "mode": "100644",
+          "kind": "blob"
+        },
         "src/ui/edit-collection-button.tsx": {
           "sha": "47854d5c04d8ab625a2c2aec3ad1af1ec57a634a",
           "mode": "100644",
@@ -39541,7 +39671,7 @@
           "kind": "blob"
         },
         "src/ui/footer.astro": {
-          "sha": "8ce33336d3f39fb400a3d796c15999c93343b35a",
+          "sha": "82322e44a430a996ae8d4b640c277bdaf14eadb6",
           "mode": "100644",
           "kind": "blob"
         },
@@ -39976,7 +40106,7 @@
           "kind": "blob"
         },
         "tests/catalog-curation.test.ts": {
-          "sha": "b9071c4a0c6a80b75d86dd6e10a2de6bfb239ea2",
+          "sha": "cbe22c594a56f724905e21539fedc52d0f6b3016",
           "mode": "100644",
           "kind": "blob"
         },
@@ -39992,6 +40122,11 @@
         },
         "tests/component-libraries.test.ts": {
           "sha": "04800799d8be1982c893137d477ac1e6372fedfd",
+          "mode": "100644",
+          "kind": "blob"
+        },
+        "tests/design-systems.test.ts": {
+          "sha": "bab5b6035dc03f1984502b6876d4958fc8f7eff7",
           "mode": "100644",
           "kind": "blob"
         },
@@ -40036,7 +40171,7 @@
           "kind": "blob"
         },
         "tests/routes.test.ts": {
-          "sha": "2bf40b72b488c74af21b430a4b66070c6f51e793",
+          "sha": "1bdcc6c950cd529f511013ec67602a054e95c9ab",
           "mode": "100644",
           "kind": "blob"
         },
