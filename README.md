@@ -1,80 +1,50 @@
-# Personal engineering skills
+# Our daily development skills
 
-A small, curated Agent Skills pack for product engineering, backed by a versioned upstream inventory and explicit review decisions. The goal is better task completion and verification, not the largest collection of prompts.
+Eight owned workflows for the work we actually do: decide what to build, deliver it, diagnose failures, review changes, investigate facts, simplify code, and carry context forward. This repository is the source of truth for our instructions.
 
-Skills live in `skills/<name>/SKILL.md`. The `kp-` prefix avoids identical names when this collection is installed alongside another pack. It reduces name collisions; precise descriptions and host instructions still determine routing.
+| Skill | Result it should produce |
+| --- | --- |
+| [kp-shape](skills/kp-shape/SKILL.md) | A clear problem, scoped design and proportionate plan, without reopening settled decisions. |
+| [kp-develop](skills/kp-develop/SKILL.md) | The requested change with evidence that its relevant behavior works. |
+| [kp-debug](skills/kp-debug/SKILL.md) | A cause supported by a reproduction and discriminating checks. |
+| [kp-review](skills/kp-review/SKILL.md) | Actionable findings against intent and conventions, with coverage limits. |
+| [kp-research](skills/kp-research/SKILL.md) | A source-backed answer to an engineering question. |
+| [kp-simplify](skills/kp-simplify/SKILL.md) | Clearer scoped code with its behavior preserved. |
+| [kp-handoff](skills/kp-handoff/SKILL.md) | Enough current state for the next session to continue accurately. |
+| [kp-simulate-discussion](skills/kp-simulate-discussion/SKILL.md) | Distinct arguments, unresolved tradeoffs and a reasoned recommendation. |
 
-## Install and use
+The names identify different activities, not mandatory stages. A typo does not need a planning ceremony. A request to implement an agreed change does not restart discovery. Review-only and diagnosis-only work stay within those boundaries.
+
+TDD, API/domain design, prototyping, UI assessment, documentation and conflict resolution remain available as guidance within these workflows. They no longer compete as separate installed skills. Each skill is self-contained; conditional references live inside its folder and are read only when needed.
+
+## Use
 
 ```sh
 npx skills add capableguptadotcom/skills
 ```
 
-Select the skills and agents you actually want. The shared [skills CLI](https://github.com/vercel-labs/skills) currently requires Node.js 22.20+ and supports Codex, Claude Code, Cursor, and other hosts. Alternatively, copy selected `skills/kp-*` folders into your host's supported skill directory. Use one installation method per agent and avoid keeping a stale copy elsewhere.
+Select the workflows and agents you want. In Codex, explicit invocation looks like `$kp-review`; natural-language selection depends on the host. No always-on custom router is required. Use one installation method per host and retain the `kp-` names to distinguish these instructions from other collections.
 
-In Codex, invoke a selected skill explicitly, for example `$kp-review`, or let the host match its description. Installation does not guarantee automatic selection. Skills alone do not provide browser control, authenticated connectors, or execution permissions. See [host setup and migration](docs/adoption.md).
+The shared [skills CLI](https://github.com/vercel-labs/skills) currently requires Node.js 22.20+. Manual installation of a selected folder is also possible. This repository change does not replace or remove skills already installed on a machine. Tools, credentials and host execution permissions remain supplied by that environment.
 
-## The owned pack
+## Why these eight
 
-| Skill | Use |
-| --- | --- |
-| [kp-start](skills/kp-start/SKILL.md) | Choose the next useful activity and carry forward settled decisions. |
-| [kp-change-plan](skills/kp-change-plan/SKILL.md) | Plan verifiable slices of an agreed change. |
-| [kp-grill-idea](skills/kp-grill-idea/SKILL.md) | Challenge an early idea and clarify its smallest useful scope. |
-| [kp-debug](skills/kp-debug/SKILL.md) | Reproduce a failure and test competing causes. |
-| [kp-tdd](skills/kp-tdd/SKILL.md) | Implement explicitly test-first through observed red and green checks. |
-| [kp-review](skills/kp-review/SKILL.md) | Review a bounded change against intent and conventions. |
-| [kp-simplify](skills/kp-simplify/SKILL.md) | Make scoped existing code clearer while preserving behavior. |
-| [kp-minimalist](skills/kp-minimalist/SKILL.md) | Choose the least machinery that meets the full requirement. |
-| [kp-complexity](skills/kp-complexity/SKILL.md) | Connect branch complexity to meaningful paths and tests. |
-| [kp-ui-review](skills/kp-ui-review/SKILL.md) | Assess an existing interface using rendered and interaction evidence. |
-| [kp-docs](skills/kp-docs/SKILL.md) | Document implemented behavior for a named reader. |
-| [kp-research](skills/kp-research/SKILL.md) | Resolve engineering questions using primary sources and versions. |
-| [kp-simulate-discussion](skills/kp-simulate-discussion/SKILL.md) | Compare distinct simulated arguments and preserve unresolved tradeoffs. |
-| [kp-api-design](skills/kp-api-design/SKILL.md) | Design boundaries from callers and compatibility needs. |
-| [kp-domain-model](skills/kp-domain-model/SKILL.md) | Reconcile domain terms, transitions, and invariants. |
-| [kp-prototype](skills/kp-prototype/SKILL.md) | Run a disposable experiment for one design uncertainty. |
-| [kp-merge-conflicts](skills/kp-merge-conflicts/SKILL.md) | Reconcile both intents in an active merge or rebase. |
-| [kp-handoff](skills/kp-handoff/SKILL.md) | Preserve current decisions, evidence, and the next action. |
-| [kp-verify-change](skills/kp-verify-change/SKILL.md) | Prove changed behavior at a named revision and report gaps. |
-| [kp-skill-maintenance](skills/kp-skill-maintenance/SKILL.md) | Assess source changes before promoting curated wording. |
+[The simulated discussion and disposition table](docs/daily-pack-decision.md) explain what stayed, what was combined, and what was removed from the previous 20-skill pack. Eight is a starting composition, not an empirically optimal number. A skill earns its place by improving a recognizable task or preventing a demonstrated failure beyond the host's existing instructions.
 
-The router is optional. Simple implementation proceeds directly. Research does not mandate delegation; review does not imply edits; an interface design does not imply implementation. These boundaries preserve the user's requested activity.
+Upstream collections informed the initial research; they do not define our roadmap or update our wording automatically. The old catalog and synchronization machinery are preserved in the [historical audit tag](https://github.com/capableguptadotcom/skills/tree/upstream-audit-2026-10-31), outside the current working tree. See [provenance](docs/provenance.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
-## Source inventory and decisions
+## Maintain our instructions
 
-The initial public inventory contains **815 skill entrypoints across 11 sources**. Generated host mirrors are excluded where a canonical directory is known. The inventory includes explicitly labeled deprecated and fixture entries so contents and exclusions remain visible.
-
-- [Complete one-line catalog](docs/catalog.md): purpose, decision, evidence level, and pinned source link.
-- [Inventory summary](docs/inventory-summary.md) and [exact-name collision index](docs/collisions.md).
-- [Machine-readable catalog](catalog.json): overlap, dependencies, simulated role arguments, decision, and provenance per entry.
-- [Overlap and wording decisions](docs/decisions.md): what belongs in the pack and why.
-- Source reviews: [pstack](docs/reviews/pstack.md), [R-stack and Ponytail](docs/reviews/rstack-ponytail.md), [Matt and other individual authors](docs/reviews/community.md), [OpenAI engineering workflows](docs/reviews/openai-engineering.md).
-- [Primary evidence and issue discussions](docs/evidence.md): experiments, reported failures, licenses, and confidence limits.
-- [Evaluation and promotion](docs/evaluation.md): what establishes a useful skill and what does not.
-- [Observed forward smoke tests](docs/forward-testing.md): actual outcomes, preserved scope, and limits.
-- [Validation record](docs/validation.md): installer discovery, provenance checks, live updater, and CI.
-
-Source assessments are not proof of improvement. Some long community entrypoints were assessed through procedure/constraint excerpts; most vendor/domain-specific OpenAI entries receive description-level inventory and provisional optional/deferred decisions. The evidence level and inspection depth are recorded. Simulated discussions are written arguments, not independent experiments.
-
-Private organization content and raw chat history are excluded from this public repository. The same standard skill-folder format is retained, with independently written instructions. Licenses are documented in [third-party notices](THIRD_PARTY_NOTICES.md); a public GitHub repository alone is not a reuse grant.
-
-## Maintain
-
-Python 3.12+, Git, and authenticated GitHub CLI are used for curation. Ordinary skill use does not need this Python tooling.
+Start from a concrete need in our work. Change the workflow that owns it, keep the instructions short, and check both the intended behavior and a neighboring request that should behave differently. Do not add a new skill for generic advice or because an upstream repository added one.
 
 ```sh
 python -m pip install -r requirements.txt
-python scripts/upstreams.py --refresh --write
 python scripts/validate.py
 python -m unittest discover -s tests -v
-python scripts/propose_update.py --publish
 ```
 
-The last command does the fetch and validation itself in an isolated temporary worktree, then creates or updates a draft candidate PR. Without `--publish`, it previews the diff and cleans up. It never edits `skills/`, changes reviewed decisions, or stages the user's checkout.
+These checks validate the package and its local references. Behavioral smoke tests and their limits are recorded under `eval/`; they do not prove improvement across all tasks or models.
 
-The daily Codex automation performs this reconciliation and review; its operational details are in [maintenance](docs/maintenance.md). Source changes enter review proposals automatically. Curated behavior changes need evidence before promotion.
+The daily upstream-sync automation has been removed. How we learn from regular Codex sessions is a separate discussion for later; no session mining, telemetry collection or automatic skill rewriting is configured here.
 
-Add another source to `sources.json` with its canonical skill roots, branch, tracked scope, and license note. Track shared references, scripts, licenses and adapter files as well as entrypoints. `upstream.lock.json` is the last observed snapshot; `reviews.json` preserves what was assessed. Changed tracked source files conservatively invalidate that source's old review status. This can over-report unrelated changes, but prevents shared dependencies from silently retaining approval.
-
-License: MIT for the owned code and instructions; upstream materials retain their own terms.
+License: MIT for the owned instructions and tooling, with retained third-party notices.
