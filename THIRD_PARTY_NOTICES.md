@@ -1,6 +1,6 @@
 # Third-party notices
 
-The owned instructions and tooling are MIT licensed. The source catalog and critiques link to upstream content; they do not relicense it. Public does not mean reusable without terms. The following notices are preserved for the licensed procedural ideas informing this collection. No unlicensed R-stack originals, private organization skill bodies, or unlicensed OpenAI plugin bodies are vendored.
+The owned instructions and tooling are MIT licensed. The historical upstream audit is retained at tag `upstream-audit-2026-10-31`; it does not define the daily pack or relicense source material. The following notices are preserved for licensed procedural ideas that informed this collection. No unlicensed R-stack originals, private organization skill bodies, or unlicensed OpenAI plugin bodies are vendored.
 
 ## cursor/plugins
 

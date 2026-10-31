@@ -1,0 +1,157 @@
+{
+  "task": "Create and execute a reusable Notes API verification recipe using existing tools, without changing product code.",
+  "skill_used": "<pack>/skills/kp-develop/SKILL.md",
+  "files_read": [
+    "<pack>/skills/kp-develop/SKILL.md",
+    "<pack>/skills/kp-develop/references/project-verification.md",
+    "<pack>/skills/kp-develop/references/testing.md",
+    "README.md",
+    "server.py",
+    "verification-results/run-k5ulf_80/evidence.json",
+    "verification-results/run-k5ulf_80/initial-stdout.log",
+    "verification-results/run-k5ulf_80/initial-stderr.log",
+    "verification-results/run-k5ulf_80/restart-stdout.log",
+    "verification-results/run-k5ulf_80/restart-stderr.log",
+    "verification-results/run-k5ulf_80/persisted-notes-snapshot.json"
+  ],
+  "commands_executed": [
+    {
+      "command": "Get-Content -LiteralPath '<skill>/SKILL.md'",
+      "result": "Read the requested workflow; no mutation."
+    },
+    {
+      "command": "Get-Content -LiteralPath '<skill>/references/project-verification.md'",
+      "result": "Read reusable recipe requirements."
+    },
+    {
+      "command": "Get-Content -LiteralPath '<skill>/references/testing.md'",
+      "result": "Read runtime evidence requirements."
+    },
+    {
+      "command": "Get-ChildItem -Force",
+      "result": "Only README.md and server.py were present in the Notes API directory."
+    },
+    {
+      "command": "rg --files -g 'AGENTS.md' -g '!node_modules' -g '!vendor'",
+      "result": "No repository-local AGENTS.md found under the Notes API directory; user-provided instructions applied."
+    },
+    {
+      "command": "git status --short",
+      "result": "No output before changes."
+    },
+    {
+      "command": "Get-Content -LiteralPath README.md",
+      "result": "Documented stdlib server startup, asynchronous initialization, routes, and durable notes.json."
+    },
+    {
+      "command": "Get-Content -LiteralPath server.py",
+      "result": "Confirmed loopback binding, port 0 support, separate storage readiness, file persistence, and sequential request behavior."
+    },
+    {
+      "command": "git rev-parse --show-toplevel",
+      "result": "<enclosing-skills-repository>; Notes API is a fixture directory in this enclosing repository."
+    },
+    {
+      "command": "git rev-parse HEAD",
+      "result": "c6091ac718c8841e86c57670fba5842f621a8db1"
+    },
+    {
+      "command": "python --version",
+      "result": "Python 3.12.3"
+    },
+    {
+      "command": "New-Item -ItemType Directory -Path verification-results -Force | Out-Null",
+      "result": "Created the authorized artifact directory."
+    },
+    {
+      "command": "apply_patch: add verify_notes.py and RECIPE.md, then move Git metadata read below cleanup-helper definitions",
+      "result": "Created the local recipe and helper; made cleanup available before a possible Git lookup failure. No runtime had been attempted before this adjustment."
+    },
+    {
+      "command": "python verification-results/verify_notes.py",
+      "result": "Exit 0; status passed; evidence written to run-k5ulf_80/evidence.json. Exact child commands and HTTP exchanges are in that file."
+    },
+    {
+      "command": "Get-Content -LiteralPath verification-results/run-k5ulf_80/<each evidence file>",
+      "result": "Inspected the evidence JSON, both stdout logs, both stderr logs, and persisted snapshot after cleanup. Requests and saved note match the claimed path."
+    },
+    {
+      "command": "Get-ChildItem -Recurse -File verification-results",
+      "result": "Confirmed retained recipe, helper, evidence, logs, and snapshot; no scratch-data directory remained."
+    },
+    {
+      "command": "git status --short -- .",
+      "result": "No output. The enclosing repository ignores this cache area, so Git status is not evidence that artifacts are absent or product bytes unchanged."
+    },
+    {
+      "command": "apply_patch: add REPORT.md and observations.json",
+      "result": "Saved the concise report and these own-word observations inside the authorized directory."
+    },
+    {
+      "command": "python -c: load observations.json and evidence.json; assert passed, scratch_removed, all child processes confirmed exited, scratch path absent, and all listed artifacts exist",
+      "result": "Exit 0; Report artifact checks passed; evidence retained and scratch absent."
+    }
+  ],
+  "decisions": [
+    "Used the documented server plus installed Python standard-library subprocess and HTTP tools; no dependency installation was necessary.",
+    "Waited for usable /notes rather than accepting /health as storage readiness.",
+    "Bound the child to port 0, used its own announced loopback port, and gave the run a unique empty data directory.",
+    "Checked both observable API results and the real persistent file, then restarted the real process against that same file.",
+    "Used server hashes in addition to enclosing Git HEAD to identify the actual source used.",
+    "Stopped only Popen child handles owned by this run; retained evidence and removed only its scratch state."
+  ],
+  "actual_results": {
+    "status": "passed",
+    "fresh_list": [],
+    "health_before_readiness": "200 process up followed by 503 initializing from /notes",
+    "created_note": {
+      "id": 1,
+      "title": "Verification note: create, list, persist"
+    },
+    "post_status": 201,
+    "list_and_disk_match": true,
+    "retained_after_real_process_restart": true,
+    "server_hash_unchanged": true,
+    "owned_processes": [
+      {
+        "pid": 47092,
+        "port": 57971,
+        "confirmed_exited": true,
+        "explicit_stop_exit_code": 1
+      },
+      {
+        "pid": 53692,
+        "port": 57993,
+        "confirmed_exited": true,
+        "explicit_stop_exit_code": 1
+      }
+    ],
+    "scratch_removed": true,
+    "failed_runtime_attempts": 0,
+    "evidence_inspected_after_cleanup": true
+  },
+  "files_changed": {
+    "product_files": [],
+    "new_verification_artifacts": [
+      "verification-results/RECIPE.md",
+      "verification-results/verify_notes.py",
+      "verification-results/REPORT.md",
+      "verification-results/observations.json",
+      "verification-results/run-k5ulf_80/evidence.json",
+      "verification-results/run-k5ulf_80/initial-stdout.log",
+      "verification-results/run-k5ulf_80/initial-stderr.log",
+      "verification-results/run-k5ulf_80/restart-stdout.log",
+      "verification-results/run-k5ulf_80/restart-stderr.log",
+      "verification-results/run-k5ulf_80/persisted-notes-snapshot.json"
+    ],
+    "temporary_state_removed": "verification-results/run-k5ulf_80/scratch-data/notes.json and its owned directory"
+  },
+  "limits": [
+    "One sequential create/read/persistence path on this Windows host only.",
+    "No concurrency, malformed input, authorization, remote deployment, or interruption-during-write coverage.",
+    "The server has no in-band revision endpoint; direct owned launch, executable path, PID, announced port, and source hashes provide instance identity.",
+    "Behavioral checks use Python assertions; run the documented command without optimization flags.",
+    "The successful run exercised ordinary cleanup. Failure-cleanup branches were not fault-injected.",
+    "No external services, stand-ins, installs, commits, publication, or delegated work were used."
+  ]
+}

@@ -1,11 +1,13 @@
 ---
 name: kp-review
-description: Assess a requested PR, branch, commit, or diff against intended behavior and repository conventions. Report evidence-backed findings without editing unless fixes are also requested.
+description: Assess a code change, named code area or existing product interface. Use for actionable findings, code-quality analysis or UI critique; do not edit unless fixes are also requested.
 ---
 
 # Review the change
 
-Establish the target revision and comparison point. Read the diff, relevant instructions, originating requirements, changed callers, and the tests that establish the affected behavior. Bound the review to the requested change and consequential connected code.
+For rendered UI or product-interaction assessment, read [UI review](references/ui.md). For requested complexity measurement, read [complexity](references/complexity.md). Otherwise use the code procedure below; do not impose unrelated modes on a routine diff.
+
+Bound the assessment to the named change or area. For a change, establish the revision and comparison point, then read the diff and originating requirements. For a named area, inspect its contract. Read relevant instructions, callers and tests that establish the affected behavior.
 
 Assess two questions separately: does it implement the agreed behavior, and can the changed paths fail or violate established conventions? A passing check and a review bot's score are evidence with limited coverage.
 
