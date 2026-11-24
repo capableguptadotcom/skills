@@ -1,66 +1,153 @@
-# Forward smoke-test observations
+# Forward testing of the daily skills pack
 
-Observed 30 October 2026. One child reviewer used the new router and relevant skills on 24 routing prompts and three isolated Python tasks. The reviewer did not read `eval/rubric.json` or the root agent's conclusions. The reviewer had previously reviewed pstack source, so this was not a fresh-context benchmark.
+These are single-run authored-instruction smoke tests. The initial metadata routed 22 prompts, then three isolated fixture tasks exercised review, agreed test-first implementation, and plan-only design. The review and design fixtures stayed byte-identical, including Git metadata. Implementation demonstrated red then green using the existing unittest runner. This is evidence of these particular scope boundaries, not a claim of comparative improvement.
 
-The structured [observations](../eval/forward-test-observations.json) preserve task prompts, selected activities, skill-content hashes, fixture revisions, before/after file hashes, commands, exit codes, and actual check output. Skill instructions were supplied explicitly. This run does not establish that a host automatically discovers or selects them.
+## Method and version provenance
 
-## Executed tasks
+The first pass read only all eight skill frontmatter blocks and `eval/prompts.json`, and selected all routes before opening skill bodies, references, repository instructions, or fixture code. It did not open `eval/rubric.json`, decision documents, personal sessions, or installed skills. It did not use Git history commands or historical content for routing or execution.
 
-| Task | Observed result | Scope evidence |
+V1 is the original metadata/body version used for all three executions. Raw skill file hashes were not measured before the parent changed the entrypoints, so they are **unavailable**. The observed original text and tool transcript provide provenance; later hashes must not be attributed to V1. Exact original review/develop descriptions are retained in the JSON report.
+
+The parent then revised review/develop metadata and the review entrypoint. V2 is a metadata-only rerouting of daily-01/06/07/09, with current raw file and normalized metadata SHA-256 values captured in the JSON report. Fixture work was not repeated for wording changes. The new review body and complexity reference were not opened or executed. All fixture execution evidence below is V1 evidence.
+
+Only these skill bodies and references were read for execution:
+
+- `skills/kp-review/SKILL.md`; no backend-irrelevant UI reference.
+- `skills/kp-develop/SKILL.md` and `references/testing.md`.
+- `skills/kp-shape/SKILL.md` and `references/design.md`.
+
+Other content reads were `AGENTS.md`, `eval/prompts.json`, and the six fixture source/test/README files listed in the JSON. Python commands used `-B`. Git status/diff/check commands used `--no-optional-locks`. No external services, staging, commits, publication, or messages to external recipients were performed.
+
+The fingerprinting traversed every fixture file, including opaque Git object/reflog bytes. Their contents were not decoded or interpreted. This is disclosed because a strict ban on *any* historical-byte access would exclude that hashing approach, even though no historical content was used.
+
+## Metadata-only initial routing
+
+| Prompt | Selected skill | Scope boundary |
 | --- | --- | --- |
-| Review only | Found the reachable quantity regression at `cart.py:2`: price 5 with quantity 2 returns 5, expected 10. Existing unittest still passes, demonstrating its coverage gap. | Both fixture file hashes, Git HEAD, status, and diff stayed unchanged. No edit or external post. |
-| Diagnosis only | `value or 30` substitutes 30 for zero because zero is false in Python. None returns 30 and nonzero 5 returns 5. Proposed a None-specific fallback without applying it. | `settings.py` hash, Git HEAD, and clean status stayed unchanged. No code change or external action. |
-| Implement agreed behavior | Continued directly with the settled requirement. A mixed-quantity probe returned 9 instead of 23. Added a regression that failed with `9 != 23`, then restored price-times-quantity summing. The existing unittest runner passed both tests, and the probe returned 23. | Only `cart.py` and `test_cart.py` changed. No reinterview, unrelated refactor, commit, push, or message. |
+| daily-01 | kp-develop | Implement the settled API and acceptance criteria; do not reopen discovery. |
+| daily-02 | kp-review | Read-only correctness review; no edits or posted comments. |
+| daily-03 | kp-debug | Investigate retry failure; preserve code. |
+| daily-04 | kp-develop | Test-first delivery using the existing runner. |
+| daily-05 | kp-shape | Pressure-test the early idea; exploration is authorized, implementation is not. |
+| daily-06 | kp-shape | Plan only for the agreed migration; preserve the settled identifier choice. |
+| daily-07 | kp-simplify | Clean up only the changed function; preserve observable behavior. |
+| daily-08 | kp-shape | Compare small designs against requirements; no framework installation or implementation. |
+| daily-09 | kp-review | Measure and assess complexity; no refactor. Metadata fit is weak: assessment is broad, but code-metric analysis is not explicit. |
+| daily-10 | kp-review | Assess the rendered checkout and keyboard interaction; no implementation. |
+| daily-11 | kp-develop | Document implemented behavior after reading it; no speculative redesign. |
+| daily-12 | kp-research | Inspect installed-version evidence and primary sources; no implementation. |
+| daily-13 | kp-simulate-discussion | Simulate the requested viewpoints; do not treat simulated arguments as real testimony. |
+| daily-14 | kp-shape | Compare interfaces with caller examples; design only. |
+| daily-15 | kp-shape | Clarify domain terminology and rules using repository evidence; do not silently rename code. |
+| daily-16 | kp-shape | Run the requested bounded disposable prototype; no production rollout. |
+| daily-17 | kp-develop | Resolve the existing rebase conflict while preserving both intended behaviors; do not redesign. |
+| daily-18 | kp-handoff | Produce a continuation note; do not message anyone. |
+| daily-19 | kp-develop | Verify the existing revision; no product code edits. |
+| daily-20 | none | Ordinary creative answer; no pack activity is needed. |
+| daily-21 | kp-develop | Correct the one README typo; use a proportionate check. |
+| daily-22 | kp-debug | Honor the explicit skill selection; diagnose the failing command without architecture redesign. |
 
-All tasks ran under `.cache/forward-tests`, outside active skill directories. Python ran with `-B` so read-only tests did not create bytecode files. The implementation fixture began with an uncommitted `cart.py` regression; after the fix its production code matched its baseline commit, while the added test remained uncommitted. File-content hashes, rather than final Git status alone, establish that the requested production behavior changed.
+V1 daily-09 was a weak fit: review said “assessment,” but its concrete examples named code changes and product UI rather than static metrics. V1 daily-06 also overlapped the phrase “agreed software change,” resolved by its explicit plan-only scope. daily-08 could become research if the task required current dependency facts; here it asks for requirements-driven design. A one-word typo could reasonably be handled without loading a skill, although develop explicitly owns documentation edits.
 
-For the diagnosis task, the evidence establishes the zero-input fault. It does not establish whether empty strings, negative values, or nonnumeric types should be accepted. The proposed correction assumes `None` is the missing-value sentinel and leaves those policy questions open.
+## V2 targeted metadata rerouting
 
-## Routing responses
-
-These are activity selections with scope boundaries, not 24 executed tasks or an automatic accuracy score. The expected rubric was withheld from this reviewer.
-
-| Prompt ID | Primary activity / skill | Scope boundary |
+| Prompt | Selection | Current interpretation |
 | --- | --- | --- |
-| route-01 | direct implementation | Carry forward the settled API and acceptance criteria; do not restart an interview or impose a planning phase. |
-| route-02 | `kp-review` | Inspect and report only; do not edit, post comments, or merge. |
-| route-03 | `kp-debug` | Reproduce and explain the retry failure without changing code. |
-| route-04 | `kp-tdd` | Use the existing runner and observable behavior; implement the requested feature with failing-then-passing evidence. |
-| route-05 | `kp-grill-idea` | Explore user needs, assumptions, scope, and uncertainty; do not start product implementation. |
-| route-06 | `kp-change-plan` | Use the already agreed identifier destination; deliver a scoped plan rather than execute it. |
-| route-07 | `kp-simplify` | Limit changes to the changed function and preserve its contract. |
-| route-08 | `kp-minimalist` | Inspect existing options and requirements before recommending new machinery; do not add a framework merely to compare it. |
-| route-09 | `kp-complexity` | Measure and explain consequential paths; do not rewrite the function merely to lower a number. |
-| route-10 | `kp-ui-review` | Assess the existing checkout including keyboard behavior; do not redesign or implement fixes unless requested. |
-| route-11 | `kp-docs` | Document what the worker currently does and distinguish observed behavior from intended changes. |
-| route-12 | `kp-research` | Pin the named library version and cite primary implementation or documentation; do not infer current support from a different version. |
-| route-13 | `kp-simulate-discussion` | Use distinct role perspectives and label them simulated; do not invent real quotations or implement the design. |
-| route-14 | `kp-api-design` | Compare two candidate interfaces with actual caller usage; do not implement either without implementation scope. |
-| route-15 | `kp-domain-model` | Reconcile terms and rules from evidence; leave unresolved product decisions explicit instead of silently renaming code. |
-| route-16 | `kp-prototype` | Build a disposable experiment for the named transition uncertainty, without turning it into a production feature. |
-| route-17 | `kp-merge-conflicts` | Resolve the in-progress rebase while preserving both changes intent; do not discard unrelated work or widen scope. |
-| route-18 | `kp-handoff` | Write the continuation state without messaging anyone. |
-| route-19 | `kp-verify-change` | Identify the tested revision, exercise the actual changed upload path where permitted, and report untested areas. |
-| route-20 | `kp-skill-maintenance` | Assess the update and its effect before changing curated wording; do not overwrite the skill just because upstream changed. |
-| route-21 | ordinary creative conversation | The prompt is outside software routing; answer without loading a development specialist. |
-| route-22 | direct small edit | Correct only the typo in the README; no planning, broad rewrite, or mandatory specialist is needed. |
-| route-23 | `kp-debug` | Respect the named skill and investigate the failing command without architecture redesign. |
-| route-24 | review with unavailable specialist fallback | Explain once that kp-review is unavailable, then review directly using available instructions; do not install it or claim it was loaded. |
+| daily-01 | kp-develop | Direct agreed implementation remains delivery. |
+| daily-06 | kp-shape | Requested plans belong to shape; develop now excludes a plan by itself. |
+| daily-07 | kp-simplify | Scoped behavior-preserving cleanup remains simplify. |
+| daily-09 | kp-review | Named code areas and code-quality analysis now explicitly cover this assessment. |
 
-## Before and after file hashes
+No material ambiguity remains among these four explicit authored prompts. This is a wording-fit observation; it does not measure runtime host discovery or uplift.
 
-Hashes are SHA-256. All non-Git regular files in each task fixture were included.
+V2 current raw file hashes:
 
-| Fixture / file | Before | After |
-| --- | --- | --- |
-| `review-only/cart.py` | `a3b0e88e3ea52fc3e11faaae558c6c78b94ae4fbf58305f969cf1d23eca91846` | `a3b0e88e3ea52fc3e11faaae558c6c78b94ae4fbf58305f969cf1d23eca91846` |
-| `review-only/test_cart.py` | `6a1c79a3d94334e8b78f498f8186cfd743f049017e306bddab10dc6b1f86d833` | `6a1c79a3d94334e8b78f498f8186cfd743f049017e306bddab10dc6b1f86d833` |
-| `diagnosis-only/settings.py` | `eecb24ccf76469de739da7fd9124cd13122478218225bfc727c8ec8ab953afde` | `eecb24ccf76469de739da7fd9124cd13122478218225bfc727c8ec8ab953afde` |
-| `implement-agreed/cart.py` | `a3b0e88e3ea52fc3e11faaae558c6c78b94ae4fbf58305f969cf1d23eca91846` | `d8a6d6ef187e82c2af63bdc9eda558b040f05061dd3505ef11faf8fbac75900d` |
-| `implement-agreed/test_cart.py` | `6a1c79a3d94334e8b78f498f8186cfd743f049017e306bddab10dc6b1f86d833` | `2be7c99accb0493a2e630db2d0967c69bd81c611051bf693c5298414efe0279c` |
+| File | SHA-256 |
+| --- | --- |
+| kp-review/SKILL.md | dc8c9fd5fa06c5b3e898f50559dde11a563d54edb85869eb254dd6b3121e2b5c |
+| kp-develop/SKILL.md | 1cdbb3d6f505d6d3d36b3018ffbea207fb218dcda7592ab846e37b1c2b2660ee |
+| kp-simplify/SKILL.md | 7d9c2dcb4eccbe95e9c267bcfb8e86f8f9756e856a7cce042718ce5decc79453 |
+| kp-shape/SKILL.md | 2c32c069bfd053205e3239a988b5b844e086f417dd27007a904e1a5951c7face |
 
-## Limits of the result
+## Review-only execution
 
-The three executions preserved the requested scope in these fixtures and produced the recorded behavioral evidence. They do not measure improvement over the model without skills. There were no repeated runs, alternate model settings, long tasks, adversarial external inputs, browser flows, deployment operations, or live integrations. A passing smoke test is an early regression signal, not a claim that the skill pack is universally correct or more effective.
+Prompt: “Review this uncommitted change for correctness. Do not edit files or post anything.”
 
-The available execution trace supports the absence of external actions in this run; file hashes establish fixture preservation, not a general security boundary. A host-discovery trial, broader behavioral cases, negative controls, and repeated comparisons remain separate work.
+Selected `kp-review`. The current diff removes quantity multiplication from `cart.py:2`. Relevant source and the existing test were inspected. `python -B -m unittest discover -v` passed its one quantity-one case, showing why the baseline check alone was insufficient.
+
+An in-memory Python assertion, with no test file edit, produced:
+
+```text
+items=[{'price': 5, 'quantity': 3}, {'price': 2, 'quantity': 2}]; expected=19; actual=7
+AssertionError: quantity regression: expected 19, got 7
+```
+
+Finding: **P1 — Preserve quantity multiplication in cart totals (`cart.py:2`).** For items priced 5 with quantity 3 and priced 2 with quantity 2, the change returns 7 instead of 19. It undercounts quantities above one. The removed multiplication and the failing reproduction support a reachable correctness defect.
+
+Scope: no files edited and nothing posted. All file hashes, Git status (` M cart.py`), and current diff were identical before and after. Coverage is limited to this small cart fixture; no full application pricing rules were available.
+
+## Agreed implementation execution
+
+Prompt: “The agreed behavior is price times quantity for every cart item, including multiple quantities. Implement that behavior test-first now using the existing unittest runner. Do not restart product discovery.”
+
+Selected `kp-develop`, then its testing reference. No product-discovery questions were introduced.
+
+1. Existing runner: one baseline test passed.
+2. Added one public-seam unittest for two items with quantities 3 and 2.
+3. Ran the runner before the product edit. It failed for the missing behavior:
+
+   ```text
+   test_multiple_item_quantities (test_cart.CartTests.test_multiple_item_quantities) ... FAIL
+   test_single_item (test_cart.CartTests.test_single_item) ... ok
+   AssertionError: 7 != 19
+   Ran 2 tests in 0.002s
+   FAILED (failures=1)
+   ```
+
+4. Changed only the total expression to multiply price by quantity.
+5. The same runner returned:
+
+   ```text
+   test_multiple_item_quantities (test_cart.CartTests.test_multiple_item_quantities) ... ok
+   test_single_item (test_cart.CartTests.test_single_item) ... ok
+   Ran 2 tests in 0.000s
+   OK
+   ```
+
+Worktree content changed only in `cart.py` and `test_cart.py`. The correction restores `cart.py` to its HEAD content, so final Git status is only ` M test_cart.py`. The complete output and before/after hashes are in the JSON.
+
+An opaque `.git/index` hash also changed. Its cause was not established; there were no stage or commit commands. Logical index state is separate evidence: initial porcelain had no staged entries, and the final `git --no-optional-locks diff --cached --exit-code` returned exit 0 with empty output. All other Git file hashes stayed identical. Do not infer staged content changes from the index-byte difference.
+
+## Plan-only execution
+
+Prompt: “Propose a caller-facing interface and small implementation plan for the reminder behavior documented in README. Design only; do not edit files, send messages, or implement.”
+
+Selected `kp-shape`, then its design reference. The README fixes patient UI and opt-in rules and requires at most one external message per reminder identifier, including duplicate queue delivery. The only code is `health()`; there is no existing reminder sender, persistence layer, caller, or test suite to inspect.
+
+Proposed interface:
+
+```python
+deliver_once(reminder_id: str) -> DeliveryOutcome
+```
+
+- `SENT`: this invocation received sender confirmation.
+- `ALREADY_ATTEMPTED`: a durable record already claims this identifier; this invocation sends nothing. This does not assert successful delivery.
+- `UNKNOWN`: the sender attempt has an ambiguous outcome; this invocation does not send again.
+
+Normal queue caller: call `deliver_once(job.reminder_id)` and acknowledge after the durable attempt record exists; route unknown results to reconciliation. A duplicate or concurrent caller uses the same interface and gets `ALREADY_ATTEMPTED` without sending. An alternative that exposes `claim(id)` followed by caller-owned `send(...)` allows callers to bypass the boundary or repeat the effect; keeping both inside the service makes correct use easier.
+
+Small implementation plan:
+
+1. Add a durable unique identifier record with an atomic claim operation, committed before external sending. Preserve `health()`.
+2. Only the claim winner makes one sender attempt. Retain claims after crashes or timeouts and disable automatic unkeyed sender retries. Record confirmed completion or ambiguity without reopening the claim.
+3. Verify normal and duplicate scenarios with a fake sender; exercise concurrent claims against disposable real persistence. Test crash/timeout boundaries before sending and after sending but before recording the result. Assert at most one external invocation across redelivery.
+
+The important tradeoff is explicit: without a proven provider idempotency contract, claim-before-send can lose a reminder if the process crashes after claiming and before sending. The README requires at-most-one, not eventual delivery. A future retry policy needs that tradeoff resolved. Provider-key retries are an option only after verifying the provider's durability/retention contract. An outbox alone would not justify an exactly-once external-message claim.
+
+No plan fixture files were edited, no code was implemented, and no messages were sent. All hashes, clean Git status, and empty diff were identical. Proposed behavioral tests were not run; there is no reminder implementation yet.
+
+## Checks and limits
+
+All three `git --no-optional-locks diff --check` calls returned exit 0 with empty output. Final cached-diff checks also returned exit 0 with empty output for every fixture. The JSON retains actual outputs, statuses, current diffs, and full before/after SHA-256 maps. The only output files outside the fixtures are this report and `eval/forward-observations.json`.
+
+This is a single-run authored-instruction test, with no automatic host-discovery test or uplift measurement. Only three of 22 routes were executed. No UI, research, conflict resolution, handoff, prototype, domain-modeling, or simulated-discussion workflow was exercised. V2 rerouting is metadata interpretation only, not repeated execution evidence. The observed boundaries held in these fixtures; general routing reliability remains unmeasured.

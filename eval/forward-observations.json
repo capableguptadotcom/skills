@@ -1,0 +1,609 @@
+{
+  "schema_version": 1,
+  "test_kind": "single-run authored-instruction forward smoke tests",
+  "method": {
+    "routing": "Read all eight SKILL.md frontmatter blocks and eval/prompts.json first; chose every route before opening skill bodies, references, AGENTS.md, or fixture source.",
+    "progressive_disclosure": "Then read only kp-review, kp-develop, kp-shape and the needed testing/design references. No other skill bodies were opened.",
+    "forbidden_inputs": "Did not open eval/rubric.json, decision documents, personal sessions, or installed skills. No Git history commands or historical content were used for selection or execution.",
+    "fingerprinting_note": "The fixture hash capture traversed all files, including opaque .git object and reflog bytes. Their contents were not decoded or interpreted. A stricter prohibition on any historical byte access would exclude this fingerprinting approach.",
+    "isolation": "Tasks used separate fixture repositories. Python commands used -B. No external service calls, staging, commits, publication, or messages to external recipients were performed."
+  },
+  "routing": [
+    {
+      "id": "daily-01",
+      "skill": "kp-develop",
+      "scope": "Implement the settled API and acceptance criteria; do not reopen discovery."
+    },
+    {
+      "id": "daily-02",
+      "skill": "kp-review",
+      "scope": "Read-only correctness review; no edits or posted comments."
+    },
+    {
+      "id": "daily-03",
+      "skill": "kp-debug",
+      "scope": "Investigate retry failure; preserve code."
+    },
+    {
+      "id": "daily-04",
+      "skill": "kp-develop",
+      "scope": "Test-first delivery using the existing runner."
+    },
+    {
+      "id": "daily-05",
+      "skill": "kp-shape",
+      "scope": "Pressure-test the early idea; exploration is authorized, implementation is not."
+    },
+    {
+      "id": "daily-06",
+      "skill": "kp-shape",
+      "scope": "Plan only for the agreed migration; preserve the settled identifier choice."
+    },
+    {
+      "id": "daily-07",
+      "skill": "kp-simplify",
+      "scope": "Clean up only the changed function; preserve observable behavior."
+    },
+    {
+      "id": "daily-08",
+      "skill": "kp-shape",
+      "scope": "Compare small designs against requirements; no framework installation or implementation."
+    },
+    {
+      "id": "daily-09",
+      "skill": "kp-review",
+      "scope": "Measure and assess complexity; no refactor. Metadata fit is weak: assessment is broad, but code-metric analysis is not explicit."
+    },
+    {
+      "id": "daily-10",
+      "skill": "kp-review",
+      "scope": "Assess the rendered checkout and keyboard interaction; no implementation."
+    },
+    {
+      "id": "daily-11",
+      "skill": "kp-develop",
+      "scope": "Document implemented behavior after reading it; no speculative redesign."
+    },
+    {
+      "id": "daily-12",
+      "skill": "kp-research",
+      "scope": "Inspect installed-version evidence and primary sources; no implementation."
+    },
+    {
+      "id": "daily-13",
+      "skill": "kp-simulate-discussion",
+      "scope": "Simulate the requested viewpoints; do not treat simulated arguments as real testimony."
+    },
+    {
+      "id": "daily-14",
+      "skill": "kp-shape",
+      "scope": "Compare interfaces with caller examples; design only."
+    },
+    {
+      "id": "daily-15",
+      "skill": "kp-shape",
+      "scope": "Clarify domain terminology and rules using repository evidence; do not silently rename code."
+    },
+    {
+      "id": "daily-16",
+      "skill": "kp-shape",
+      "scope": "Run the requested bounded disposable prototype; no production rollout."
+    },
+    {
+      "id": "daily-17",
+      "skill": "kp-develop",
+      "scope": "Resolve the existing rebase conflict while preserving both intended behaviors; do not redesign."
+    },
+    {
+      "id": "daily-18",
+      "skill": "kp-handoff",
+      "scope": "Produce a continuation note; do not message anyone."
+    },
+    {
+      "id": "daily-19",
+      "skill": "kp-develop",
+      "scope": "Verify the existing revision; no product code edits."
+    },
+    {
+      "id": "daily-20",
+      "skill": null,
+      "scope": "Ordinary creative answer; no pack activity is needed."
+    },
+    {
+      "id": "daily-21",
+      "skill": "kp-develop",
+      "scope": "Correct the one README typo; use a proportionate check."
+    },
+    {
+      "id": "daily-22",
+      "skill": "kp-debug",
+      "scope": "Honor the explicit skill selection; diagnose the failing command without architecture redesign."
+    }
+  ],
+  "routing_caveats": [
+    "daily-09 is a weak metadata match: kp-review advertises assessment but names code changes and product interfaces rather than code metrics. This route should not be counted as decisive evidence of clear static-analysis discovery.",
+    "daily-06 has superficial overlap with kp-develop because the change is agreed. Explicit plan-only wording and kp-shape's requested-plans description resolved the boundary.",
+    "daily-08 could become kp-research if it asked for current dependency facts. The authored wording is requirements-driven design, so kp-shape was selected.",
+    "daily-21 is trivial and can reasonably be handled without a skill, though kp-develop explicitly owns documentation edits."
+  ],
+  "files_read": {
+    "metadata_only": [
+      "skills/kp-debug/SKILL.md",
+      "skills/kp-develop/SKILL.md",
+      "skills/kp-handoff/SKILL.md",
+      "skills/kp-research/SKILL.md",
+      "skills/kp-review/SKILL.md",
+      "skills/kp-shape/SKILL.md",
+      "skills/kp-simplify/SKILL.md",
+      "skills/kp-simulate-discussion/SKILL.md"
+    ],
+    "full_skill_bodies": [
+      "skills/kp-review/SKILL.md",
+      "skills/kp-develop/SKILL.md",
+      "skills/kp-shape/SKILL.md"
+    ],
+    "references": [
+      "skills/kp-develop/references/testing.md",
+      "skills/kp-shape/references/design.md"
+    ],
+    "other": [
+      "AGENTS.md",
+      "eval/prompts.json",
+      ".cache/forward-fixtures/review-only/cart.py",
+      ".cache/forward-fixtures/review-only/test_cart.py",
+      ".cache/forward-fixtures/agreed-implementation/cart.py",
+      ".cache/forward-fixtures/agreed-implementation/test_cart.py",
+      ".cache/forward-fixtures/plan-only/README.md",
+      ".cache/forward-fixtures/plan-only/service.py"
+    ],
+    "git": "Current uncommitted diff and porcelain status only, plus opaque before/after hashes of every fixture file. Initial file inventory included .git paths.",
+    "current_metadata_reread": [
+      "skills/kp-review/SKILL.md",
+      "skills/kp-develop/SKILL.md",
+      "skills/kp-simplify/SKILL.md",
+      "skills/kp-shape/SKILL.md"
+    ],
+    "current_hash_only_note": "V2 full-file hashes were computed without opening body content; no changed review body or complexity reference was read."
+  },
+  "fixtures": {
+    "review-only": {
+      "skill": "kp-review",
+      "prompt": "Review this uncommitted change for correctness. Do not edit files or post anything.",
+      "before": {
+        "sha256": {
+          ".git/COMMIT_EDITMSG": "416b36c5238bc990d34b5f35c5543a4f79e057f7683a5d426b6133771dbfab6d",
+          ".git/config": "05becdb83bb897f6103c8d91439e2e9092144edf5b3955a746fce4975c12bfdc",
+          ".git/description": "85ab6c163d43a17ea9cf7788308bca1466f1b0a8d1cc92e26e9bf63da4062aee",
+          ".git/HEAD": "28d25bf82af4c0e2b72f50959b2beb859e3e60b9630a5e8c603dad4ddb2b6e80",
+          ".git/hooks/applypatch-msg.sample": "0223497a0b8b033aa58a3a521b8629869386cf7ab0e2f101963d328aa62193f7",
+          ".git/hooks/commit-msg.sample": "1f74d5e9292979b573ebd59741d46cb93ff391acdd083d340b94370753d92437",
+          ".git/hooks/fsmonitor-watchman.sample": "e0549964e93897b519bd8e333c037e51fff0f88ba13e086a331592bf801fa1d0",
+          ".git/hooks/post-update.sample": "81765af2daef323061dcbc5e61fc16481cb74b3bac9ad8a174b186523586f6c5",
+          ".git/hooks/pre-applypatch.sample": "e15c5b469ea3e0a695bea6f2c82bcf8e62821074939ddd85b77e0007ff165475",
+          ".git/hooks/pre-commit.sample": "57185b7b9f05239d7ab52db045f5b89eb31348d7b2177eab214f5eb872e1971b",
+          ".git/hooks/pre-merge-commit.sample": "d3825a70337940ebbd0a5c072984e13245920cdf8898bd225c8d27a6dfc9cb53",
+          ".git/hooks/pre-push.sample": "ecce9c7e04d3f5dd9d8ada81753dd1d549a9634b26770042b58dda00217d086a",
+          ".git/hooks/pre-rebase.sample": "4febce867790052338076f4e66cc47efb14879d18097d1d61c8261859eaaa7b3",
+          ".git/hooks/pre-receive.sample": "a4c3d2b9c7bb3fd8d1441c31bd4ee71a595d66b44fcf49ddb310252320169989",
+          ".git/hooks/prepare-commit-msg.sample": "e9ddcaa4189fddd25ed97fc8c789eca7b6ca16390b2392ae3276f0c8e1aa4619",
+          ".git/hooks/push-to-checkout.sample": "a53d0741798b287c6dd7afa64aee473f305e65d3f49463bb9d7408ec3b12bf5f",
+          ".git/hooks/sendemail-validate.sample": "44ebfc923dc5466bc009602f0ecf067b9c65459abfe8868ddc49b78e6ced7a92",
+          ".git/hooks/update.sample": "8d5f2fa83e103cf08b57eaa67521df9194f45cbdbcb37da52ad586097a14d106",
+          ".git/index": "a6e72aa1a09d8e76ab06663c917d0bb9e2f9e9ae1b017c303b28b4c89bb24d04",
+          ".git/info/exclude": "6671fe83b7a07c8932ee89164d1f2793b2318058eb8b98dc5c06ee0a5a3b0ec1",
+          ".git/logs/HEAD": "0bb30d826ac01d986eb40a1d8e1883469476073101b6e84bb34a1a38f6ba3de1",
+          ".git/logs/refs/heads/main": "0bb30d826ac01d986eb40a1d8e1883469476073101b6e84bb34a1a38f6ba3de1",
+          ".git/objects/20/6957bb3e335b8cbb7566603816112e5b3765cf": "4ae95580f9e512f18d2490557fb5a360433ab8c80863d5f5150dfa310da53b2c",
+          ".git/objects/20/e450662c395d1a8883468b25c59e9b812e5951": "8a192952b6a92791804892adec175e3b25480d0f85822b061e4f3467b826d56b",
+          ".git/objects/2e/dc37847b08016974298db50441e82a172d1e7f": "0047f1f05603b636d5a141815c2c5d75603565382b4bb27198cbffe5e74c99c7",
+          ".git/objects/87/44697ebe882c7b6946c332b37daaf35472610e": "bd19cb7deceb0b27fd1f422b58e8b232bdd49e3eaf1544c94a623aba93a66e25",
+          ".git/refs/heads/main": "035daa96a0cec32f574ae8e4db62b9e8d7ca84ae08afe0bc75edc5700c2d2118",
+          "cart.py": "a3b0e88e3ea52fc3e11faaae558c6c78b94ae4fbf58305f969cf1d23eca91846",
+          "test_cart.py": "74f73349d2ff2c5a0f7545c71aa3f8001dc964dfc00cc718420b12c8c0b5d44d"
+        },
+        "git_status": " M cart.py\n",
+        "git_diff": "diff --git a/cart.py b/cart.py\nindex 8744697..1eda68c 100644\n--- a/cart.py\n+++ b/cart.py\n@@ -1,2 +1,2 @@\n def total(items):\n-    return sum(item['price'] * item['quantity'] for item in items)\n+    return sum(item['price'] for item in items)\n"
+      },
+      "after": {
+        "sha256": {
+          ".git/COMMIT_EDITMSG": "416b36c5238bc990d34b5f35c5543a4f79e057f7683a5d426b6133771dbfab6d",
+          ".git/config": "05becdb83bb897f6103c8d91439e2e9092144edf5b3955a746fce4975c12bfdc",
+          ".git/description": "85ab6c163d43a17ea9cf7788308bca1466f1b0a8d1cc92e26e9bf63da4062aee",
+          ".git/HEAD": "28d25bf82af4c0e2b72f50959b2beb859e3e60b9630a5e8c603dad4ddb2b6e80",
+          ".git/hooks/applypatch-msg.sample": "0223497a0b8b033aa58a3a521b8629869386cf7ab0e2f101963d328aa62193f7",
+          ".git/hooks/commit-msg.sample": "1f74d5e9292979b573ebd59741d46cb93ff391acdd083d340b94370753d92437",
+          ".git/hooks/fsmonitor-watchman.sample": "e0549964e93897b519bd8e333c037e51fff0f88ba13e086a331592bf801fa1d0",
+          ".git/hooks/post-update.sample": "81765af2daef323061dcbc5e61fc16481cb74b3bac9ad8a174b186523586f6c5",
+          ".git/hooks/pre-applypatch.sample": "e15c5b469ea3e0a695bea6f2c82bcf8e62821074939ddd85b77e0007ff165475",
+          ".git/hooks/pre-commit.sample": "57185b7b9f05239d7ab52db045f5b89eb31348d7b2177eab214f5eb872e1971b",
+          ".git/hooks/pre-merge-commit.sample": "d3825a70337940ebbd0a5c072984e13245920cdf8898bd225c8d27a6dfc9cb53",
+          ".git/hooks/pre-push.sample": "ecce9c7e04d3f5dd9d8ada81753dd1d549a9634b26770042b58dda00217d086a",
+          ".git/hooks/pre-rebase.sample": "4febce867790052338076f4e66cc47efb14879d18097d1d61c8261859eaaa7b3",
+          ".git/hooks/pre-receive.sample": "a4c3d2b9c7bb3fd8d1441c31bd4ee71a595d66b44fcf49ddb310252320169989",
+          ".git/hooks/prepare-commit-msg.sample": "e9ddcaa4189fddd25ed97fc8c789eca7b6ca16390b2392ae3276f0c8e1aa4619",
+          ".git/hooks/push-to-checkout.sample": "a53d0741798b287c6dd7afa64aee473f305e65d3f49463bb9d7408ec3b12bf5f",
+          ".git/hooks/sendemail-validate.sample": "44ebfc923dc5466bc009602f0ecf067b9c65459abfe8868ddc49b78e6ced7a92",
+          ".git/hooks/update.sample": "8d5f2fa83e103cf08b57eaa67521df9194f45cbdbcb37da52ad586097a14d106",
+          ".git/index": "a6e72aa1a09d8e76ab06663c917d0bb9e2f9e9ae1b017c303b28b4c89bb24d04",
+          ".git/info/exclude": "6671fe83b7a07c8932ee89164d1f2793b2318058eb8b98dc5c06ee0a5a3b0ec1",
+          ".git/logs/HEAD": "0bb30d826ac01d986eb40a1d8e1883469476073101b6e84bb34a1a38f6ba3de1",
+          ".git/logs/refs/heads/main": "0bb30d826ac01d986eb40a1d8e1883469476073101b6e84bb34a1a38f6ba3de1",
+          ".git/objects/20/6957bb3e335b8cbb7566603816112e5b3765cf": "4ae95580f9e512f18d2490557fb5a360433ab8c80863d5f5150dfa310da53b2c",
+          ".git/objects/20/e450662c395d1a8883468b25c59e9b812e5951": "8a192952b6a92791804892adec175e3b25480d0f85822b061e4f3467b826d56b",
+          ".git/objects/2e/dc37847b08016974298db50441e82a172d1e7f": "0047f1f05603b636d5a141815c2c5d75603565382b4bb27198cbffe5e74c99c7",
+          ".git/objects/87/44697ebe882c7b6946c332b37daaf35472610e": "bd19cb7deceb0b27fd1f422b58e8b232bdd49e3eaf1544c94a623aba93a66e25",
+          ".git/refs/heads/main": "035daa96a0cec32f574ae8e4db62b9e8d7ca84ae08afe0bc75edc5700c2d2118",
+          "cart.py": "a3b0e88e3ea52fc3e11faaae558c6c78b94ae4fbf58305f969cf1d23eca91846",
+          "test_cart.py": "74f73349d2ff2c5a0f7545c71aa3f8001dc964dfc00cc718420b12c8c0b5d44d"
+        },
+        "git_status": " M cart.py\n",
+        "git_diff": "diff --git a/cart.py b/cart.py\nindex 8744697..1eda68c 100644\n--- a/cart.py\n+++ b/cart.py\n@@ -1,2 +1,2 @@\n def total(items):\n-    return sum(item['price'] * item['quantity'] for item in items)\n+    return sum(item['price'] for item in items)\n"
+      },
+      "delta": {
+        "changed": [],
+        "added": [],
+        "removed": [],
+        "git_status_unchanged": true,
+        "git_diff_unchanged": true
+      },
+      "baseline_check": {
+        "chunk_id": "6ba4f4",
+        "wall_time_seconds": 0.3277368,
+        "exit_code": 0,
+        "original_token_count": 42,
+        "output": "test_single_item (test_cart.CartTests.test_single_item) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 1 test in 0.000s\r\n\r\nOK\r\n"
+      },
+      "reproduction": {
+        "chunk_id": "4dbf83",
+        "wall_time_seconds": 0.3082748,
+        "exit_code": 1,
+        "original_token_count": 56,
+        "output": "items=[{'price': 5, 'quantity': 3}, {'price': 2, 'quantity': 2}]; expected=19; actual=7\r\nTraceback (most recent call last):\r\n  File \"<stdin>\", line 6, in <module>\r\nAssertionError: quantity regression: expected 19, got 7\r\n"
+      },
+      "finding": {
+        "priority": "P1",
+        "location": "cart.py:2",
+        "title": "Preserve quantity multiplication in cart totals",
+        "trigger": "A cart containing price 5 with quantity 3 and price 2 with quantity 2.",
+        "wrong_outcome": "Returns 7 instead of 19, undercounting all quantities above one.",
+        "evidence": "Current diff removes multiplication by quantity. Existing quantity-one test passes; in-memory multi-quantity assertion fails.",
+        "coverage_gap": "Only the tiny fixture and connected test were reviewed. No full application or pricing policy was available."
+      },
+      "scope_result": "All fixture files and Git bytes unchanged; no edits or posted review."
+    },
+    "agreed-implementation": {
+      "skill": "kp-develop",
+      "prompt": "The agreed behavior is price times quantity for every cart item, including multiple quantities. Implement that behavior test-first now using the existing unittest runner. Do not restart product discovery.",
+      "before": {
+        "sha256": {
+          ".git/COMMIT_EDITMSG": "416b36c5238bc990d34b5f35c5543a4f79e057f7683a5d426b6133771dbfab6d",
+          ".git/config": "05becdb83bb897f6103c8d91439e2e9092144edf5b3955a746fce4975c12bfdc",
+          ".git/description": "85ab6c163d43a17ea9cf7788308bca1466f1b0a8d1cc92e26e9bf63da4062aee",
+          ".git/HEAD": "28d25bf82af4c0e2b72f50959b2beb859e3e60b9630a5e8c603dad4ddb2b6e80",
+          ".git/hooks/applypatch-msg.sample": "0223497a0b8b033aa58a3a521b8629869386cf7ab0e2f101963d328aa62193f7",
+          ".git/hooks/commit-msg.sample": "1f74d5e9292979b573ebd59741d46cb93ff391acdd083d340b94370753d92437",
+          ".git/hooks/fsmonitor-watchman.sample": "e0549964e93897b519bd8e333c037e51fff0f88ba13e086a331592bf801fa1d0",
+          ".git/hooks/post-update.sample": "81765af2daef323061dcbc5e61fc16481cb74b3bac9ad8a174b186523586f6c5",
+          ".git/hooks/pre-applypatch.sample": "e15c5b469ea3e0a695bea6f2c82bcf8e62821074939ddd85b77e0007ff165475",
+          ".git/hooks/pre-commit.sample": "57185b7b9f05239d7ab52db045f5b89eb31348d7b2177eab214f5eb872e1971b",
+          ".git/hooks/pre-merge-commit.sample": "d3825a70337940ebbd0a5c072984e13245920cdf8898bd225c8d27a6dfc9cb53",
+          ".git/hooks/pre-push.sample": "ecce9c7e04d3f5dd9d8ada81753dd1d549a9634b26770042b58dda00217d086a",
+          ".git/hooks/pre-rebase.sample": "4febce867790052338076f4e66cc47efb14879d18097d1d61c8261859eaaa7b3",
+          ".git/hooks/pre-receive.sample": "a4c3d2b9c7bb3fd8d1441c31bd4ee71a595d66b44fcf49ddb310252320169989",
+          ".git/hooks/prepare-commit-msg.sample": "e9ddcaa4189fddd25ed97fc8c789eca7b6ca16390b2392ae3276f0c8e1aa4619",
+          ".git/hooks/push-to-checkout.sample": "a53d0741798b287c6dd7afa64aee473f305e65d3f49463bb9d7408ec3b12bf5f",
+          ".git/hooks/sendemail-validate.sample": "44ebfc923dc5466bc009602f0ecf067b9c65459abfe8868ddc49b78e6ced7a92",
+          ".git/hooks/update.sample": "8d5f2fa83e103cf08b57eaa67521df9194f45cbdbcb37da52ad586097a14d106",
+          ".git/index": "4104c0b8b5e4b3311b27d5cc396320b26e90b99190cc09d32dc0bda2b521c700",
+          ".git/info/exclude": "6671fe83b7a07c8932ee89164d1f2793b2318058eb8b98dc5c06ee0a5a3b0ec1",
+          ".git/logs/HEAD": "934fb12fa2c3249ef7ad6c0e87546f0c750ae0763e9bdc8a3a49081ad623c069",
+          ".git/logs/refs/heads/main": "934fb12fa2c3249ef7ad6c0e87546f0c750ae0763e9bdc8a3a49081ad623c069",
+          ".git/objects/20/6957bb3e335b8cbb7566603816112e5b3765cf": "4ae95580f9e512f18d2490557fb5a360433ab8c80863d5f5150dfa310da53b2c",
+          ".git/objects/2e/dc37847b08016974298db50441e82a172d1e7f": "0047f1f05603b636d5a141815c2c5d75603565382b4bb27198cbffe5e74c99c7",
+          ".git/objects/87/44697ebe882c7b6946c332b37daaf35472610e": "bd19cb7deceb0b27fd1f422b58e8b232bdd49e3eaf1544c94a623aba93a66e25",
+          ".git/objects/ba/ac79e759025f314feaf97d2511e654e8f8f818": "30405966cb915ca0b6a47fd6b4bc2935fd957301f3d2e883ad8a545ff1cb25c1",
+          ".git/refs/heads/main": "90ba3b151410009ec0ded32be9191ef6964cd93d4cb21852aa816f81e8d98c02",
+          "cart.py": "a3b0e88e3ea52fc3e11faaae558c6c78b94ae4fbf58305f969cf1d23eca91846",
+          "test_cart.py": "74f73349d2ff2c5a0f7545c71aa3f8001dc964dfc00cc718420b12c8c0b5d44d"
+        },
+        "git_status": " M cart.py\n",
+        "git_diff": "diff --git a/cart.py b/cart.py\nindex 8744697..1eda68c 100644\n--- a/cart.py\n+++ b/cart.py\n@@ -1,2 +1,2 @@\n def total(items):\n-    return sum(item['price'] * item['quantity'] for item in items)\n+    return sum(item['price'] for item in items)\n"
+      },
+      "after": {
+        "sha256": {
+          ".git/COMMIT_EDITMSG": "416b36c5238bc990d34b5f35c5543a4f79e057f7683a5d426b6133771dbfab6d",
+          ".git/config": "05becdb83bb897f6103c8d91439e2e9092144edf5b3955a746fce4975c12bfdc",
+          ".git/description": "85ab6c163d43a17ea9cf7788308bca1466f1b0a8d1cc92e26e9bf63da4062aee",
+          ".git/HEAD": "28d25bf82af4c0e2b72f50959b2beb859e3e60b9630a5e8c603dad4ddb2b6e80",
+          ".git/hooks/applypatch-msg.sample": "0223497a0b8b033aa58a3a521b8629869386cf7ab0e2f101963d328aa62193f7",
+          ".git/hooks/commit-msg.sample": "1f74d5e9292979b573ebd59741d46cb93ff391acdd083d340b94370753d92437",
+          ".git/hooks/fsmonitor-watchman.sample": "e0549964e93897b519bd8e333c037e51fff0f88ba13e086a331592bf801fa1d0",
+          ".git/hooks/post-update.sample": "81765af2daef323061dcbc5e61fc16481cb74b3bac9ad8a174b186523586f6c5",
+          ".git/hooks/pre-applypatch.sample": "e15c5b469ea3e0a695bea6f2c82bcf8e62821074939ddd85b77e0007ff165475",
+          ".git/hooks/pre-commit.sample": "57185b7b9f05239d7ab52db045f5b89eb31348d7b2177eab214f5eb872e1971b",
+          ".git/hooks/pre-merge-commit.sample": "d3825a70337940ebbd0a5c072984e13245920cdf8898bd225c8d27a6dfc9cb53",
+          ".git/hooks/pre-push.sample": "ecce9c7e04d3f5dd9d8ada81753dd1d549a9634b26770042b58dda00217d086a",
+          ".git/hooks/pre-rebase.sample": "4febce867790052338076f4e66cc47efb14879d18097d1d61c8261859eaaa7b3",
+          ".git/hooks/pre-receive.sample": "a4c3d2b9c7bb3fd8d1441c31bd4ee71a595d66b44fcf49ddb310252320169989",
+          ".git/hooks/prepare-commit-msg.sample": "e9ddcaa4189fddd25ed97fc8c789eca7b6ca16390b2392ae3276f0c8e1aa4619",
+          ".git/hooks/push-to-checkout.sample": "a53d0741798b287c6dd7afa64aee473f305e65d3f49463bb9d7408ec3b12bf5f",
+          ".git/hooks/sendemail-validate.sample": "44ebfc923dc5466bc009602f0ecf067b9c65459abfe8868ddc49b78e6ced7a92",
+          ".git/hooks/update.sample": "8d5f2fa83e103cf08b57eaa67521df9194f45cbdbcb37da52ad586097a14d106",
+          ".git/index": "7d3ad32e4cac2c9774352a388e9fab3e2d8ac2e19e00720d8b3396ab5ff93bfd",
+          ".git/info/exclude": "6671fe83b7a07c8932ee89164d1f2793b2318058eb8b98dc5c06ee0a5a3b0ec1",
+          ".git/logs/HEAD": "934fb12fa2c3249ef7ad6c0e87546f0c750ae0763e9bdc8a3a49081ad623c069",
+          ".git/logs/refs/heads/main": "934fb12fa2c3249ef7ad6c0e87546f0c750ae0763e9bdc8a3a49081ad623c069",
+          ".git/objects/20/6957bb3e335b8cbb7566603816112e5b3765cf": "4ae95580f9e512f18d2490557fb5a360433ab8c80863d5f5150dfa310da53b2c",
+          ".git/objects/2e/dc37847b08016974298db50441e82a172d1e7f": "0047f1f05603b636d5a141815c2c5d75603565382b4bb27198cbffe5e74c99c7",
+          ".git/objects/87/44697ebe882c7b6946c332b37daaf35472610e": "bd19cb7deceb0b27fd1f422b58e8b232bdd49e3eaf1544c94a623aba93a66e25",
+          ".git/objects/ba/ac79e759025f314feaf97d2511e654e8f8f818": "30405966cb915ca0b6a47fd6b4bc2935fd957301f3d2e883ad8a545ff1cb25c1",
+          ".git/refs/heads/main": "90ba3b151410009ec0ded32be9191ef6964cd93d4cb21852aa816f81e8d98c02",
+          "cart.py": "d8a6d6ef187e82c2af63bdc9eda558b040f05061dd3505ef11faf8fbac75900d",
+          "test_cart.py": "18f77a4bf2661693517645ad3e1afd418f12411c07d38101119b327e9021104e"
+        },
+        "git_status": " M test_cart.py\n",
+        "git_diff": "diff --git a/test_cart.py b/test_cart.py\nindex 206957b..90dfa91 100644\n--- a/test_cart.py\n+++ b/test_cart.py\n@@ -4,3 +4,6 @@ from cart import total\n class CartTests(unittest.TestCase):\n     def test_single_item(self):\n         self.assertEqual(total([{'price':5,'quantity':1}]),5)\n+\n+    def test_multiple_item_quantities(self):\n+        self.assertEqual(total([{'price':5,'quantity':3},{'price':2,'quantity':2}]),19)\n"
+      },
+      "delta": {
+        "changed": [
+          ".git/index",
+          "cart.py",
+          "test_cart.py"
+        ],
+        "added": [],
+        "removed": [],
+        "git_status_unchanged": false,
+        "git_diff_unchanged": false
+      },
+      "baseline_check": {
+        "chunk_id": "8fc02c",
+        "wall_time_seconds": 0.3347293,
+        "exit_code": 0,
+        "original_token_count": 42,
+        "output": "test_single_item (test_cart.CartTests.test_single_item) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 1 test in 0.000s\r\n\r\nOK\r\n"
+      },
+      "red_check": {
+        "chunk_id": "0feba9",
+        "wall_time_seconds": 0.351058,
+        "exit_code": 1,
+        "original_token_count": 206,
+        "output": "test_multiple_item_quantities (test_cart.CartTests.test_multiple_item_quantities) ... FAIL\r\ntest_single_item (test_cart.CartTests.test_single_item) ... ok\r\n\r\n======================================================================\r\nFAIL: test_multiple_item_quantities (test_cart.CartTests.test_multiple_item_quantities)\r\n----------------------------------------------------------------------\r\nTraceback (most recent call last):\r\n  File \"C:\\Users\\DELL\\repos\\skills\\.cache\\daily-pack-refocus\\.cache\\forward-fixtures\\agreed-implementation\\test_cart.py\", line 9, in test_multiple_item_quantities\r\n    self.assertEqual(total([{'price':5,'quantity':3},{'price':2,'quantity':2}]),19)\r\nAssertionError: 7 != 19\r\n\r\n----------------------------------------------------------------------\r\nRan 2 tests in 0.002s\r\n\r\nFAILED (failures=1)\r\n"
+      },
+      "green_check": {
+        "chunk_id": "cdbf9e",
+        "wall_time_seconds": 0.3920729,
+        "exit_code": 0,
+        "original_token_count": 65,
+        "output": "test_multiple_item_quantities (test_cart.CartTests.test_multiple_item_quantities) ... ok\r\ntest_single_item (test_cart.CartTests.test_single_item) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 2 tests in 0.000s\r\n\r\nOK\r\n"
+      },
+      "change": "Added one multi-item multi-quantity unittest, observed a behavior failure (7 != 19), then changed total to sum price * quantity. Existing single-quantity behavior still passes.",
+      "scope_result": "Only cart.py and test_cart.py worktree contents changed. cart.py now matches HEAD, so final Git diff shows only the added regression test. No discovery restart, staging, or commit.",
+      "metadata_anomaly": "The implementation fixture's .git/index hash changed; all other .git file hashes remained identical. No stage/commit commands were issued. Cause was not established; do not claim byte-identical Git metadata for this writable task."
+    },
+    "plan-only": {
+      "skill": "kp-shape",
+      "prompt": "Propose a caller-facing interface and small implementation plan for the reminder behavior documented in README. Design only; do not edit files, send messages, or implement.",
+      "before": {
+        "sha256": {
+          ".git/COMMIT_EDITMSG": "416b36c5238bc990d34b5f35c5543a4f79e057f7683a5d426b6133771dbfab6d",
+          ".git/config": "05becdb83bb897f6103c8d91439e2e9092144edf5b3955a746fce4975c12bfdc",
+          ".git/description": "85ab6c163d43a17ea9cf7788308bca1466f1b0a8d1cc92e26e9bf63da4062aee",
+          ".git/HEAD": "28d25bf82af4c0e2b72f50959b2beb859e3e60b9630a5e8c603dad4ddb2b6e80",
+          ".git/hooks/applypatch-msg.sample": "0223497a0b8b033aa58a3a521b8629869386cf7ab0e2f101963d328aa62193f7",
+          ".git/hooks/commit-msg.sample": "1f74d5e9292979b573ebd59741d46cb93ff391acdd083d340b94370753d92437",
+          ".git/hooks/fsmonitor-watchman.sample": "e0549964e93897b519bd8e333c037e51fff0f88ba13e086a331592bf801fa1d0",
+          ".git/hooks/post-update.sample": "81765af2daef323061dcbc5e61fc16481cb74b3bac9ad8a174b186523586f6c5",
+          ".git/hooks/pre-applypatch.sample": "e15c5b469ea3e0a695bea6f2c82bcf8e62821074939ddd85b77e0007ff165475",
+          ".git/hooks/pre-commit.sample": "57185b7b9f05239d7ab52db045f5b89eb31348d7b2177eab214f5eb872e1971b",
+          ".git/hooks/pre-merge-commit.sample": "d3825a70337940ebbd0a5c072984e13245920cdf8898bd225c8d27a6dfc9cb53",
+          ".git/hooks/pre-push.sample": "ecce9c7e04d3f5dd9d8ada81753dd1d549a9634b26770042b58dda00217d086a",
+          ".git/hooks/pre-rebase.sample": "4febce867790052338076f4e66cc47efb14879d18097d1d61c8261859eaaa7b3",
+          ".git/hooks/pre-receive.sample": "a4c3d2b9c7bb3fd8d1441c31bd4ee71a595d66b44fcf49ddb310252320169989",
+          ".git/hooks/prepare-commit-msg.sample": "e9ddcaa4189fddd25ed97fc8c789eca7b6ca16390b2392ae3276f0c8e1aa4619",
+          ".git/hooks/push-to-checkout.sample": "a53d0741798b287c6dd7afa64aee473f305e65d3f49463bb9d7408ec3b12bf5f",
+          ".git/hooks/sendemail-validate.sample": "44ebfc923dc5466bc009602f0ecf067b9c65459abfe8868ddc49b78e6ced7a92",
+          ".git/hooks/update.sample": "8d5f2fa83e103cf08b57eaa67521df9194f45cbdbcb37da52ad586097a14d106",
+          ".git/index": "5b8afd767a92d702cea2e51141bf4140afd60c4c6831c97ae60c4e7bad1f32dd",
+          ".git/info/exclude": "6671fe83b7a07c8932ee89164d1f2793b2318058eb8b98dc5c06ee0a5a3b0ec1",
+          ".git/logs/HEAD": "1090444267cae56ef79dcaea0e446b16192f337233cf5bf3df77188c60856552",
+          ".git/logs/refs/heads/main": "1090444267cae56ef79dcaea0e446b16192f337233cf5bf3df77188c60856552",
+          ".git/objects/02/6398a08f6d7d8f4422cdf8cb33dbaa0c8b037b": "22f8212122dccc2796b8756cb59a52fb1eb124d2e6484b94cb8d08abd46cda85",
+          ".git/objects/83/4f2a3555d910e6ef328ad0500defec421846ed": "d2af88b1a4493b5e499547414acf504ff6c7ea3092d9638f9b56138450671eb0",
+          ".git/objects/9c/3bbc380228f6efb1042ae6331c1238803d3084": "5cbf2ad35bf56b276afad86f2286089baa0f1d667b649c048fe6f5fe0951f46e",
+          ".git/objects/d5/25cf017d00395c08b55b6415fca9c45de5e96b": "1b6431ad2f6a070bd0e2b875ef89cc9f132272630ec406dce8b4d473df803c2d",
+          ".git/refs/heads/main": "e0d69d97fa8befaae35a90bd9ef601efad2de882a4b9281900cc771bd88966a5",
+          "README.md": "ffa3094534dec82138df38a2718b8e6cbed7abada199676ca608c590f5bf9f9a",
+          "service.py": "f08820e2f697fa6075de5c6c8f545b49f3fcac3b214722120c19b82f475b5e24"
+        },
+        "git_status": "",
+        "git_diff": ""
+      },
+      "after": {
+        "sha256": {
+          ".git/COMMIT_EDITMSG": "416b36c5238bc990d34b5f35c5543a4f79e057f7683a5d426b6133771dbfab6d",
+          ".git/config": "05becdb83bb897f6103c8d91439e2e9092144edf5b3955a746fce4975c12bfdc",
+          ".git/description": "85ab6c163d43a17ea9cf7788308bca1466f1b0a8d1cc92e26e9bf63da4062aee",
+          ".git/HEAD": "28d25bf82af4c0e2b72f50959b2beb859e3e60b9630a5e8c603dad4ddb2b6e80",
+          ".git/hooks/applypatch-msg.sample": "0223497a0b8b033aa58a3a521b8629869386cf7ab0e2f101963d328aa62193f7",
+          ".git/hooks/commit-msg.sample": "1f74d5e9292979b573ebd59741d46cb93ff391acdd083d340b94370753d92437",
+          ".git/hooks/fsmonitor-watchman.sample": "e0549964e93897b519bd8e333c037e51fff0f88ba13e086a331592bf801fa1d0",
+          ".git/hooks/post-update.sample": "81765af2daef323061dcbc5e61fc16481cb74b3bac9ad8a174b186523586f6c5",
+          ".git/hooks/pre-applypatch.sample": "e15c5b469ea3e0a695bea6f2c82bcf8e62821074939ddd85b77e0007ff165475",
+          ".git/hooks/pre-commit.sample": "57185b7b9f05239d7ab52db045f5b89eb31348d7b2177eab214f5eb872e1971b",
+          ".git/hooks/pre-merge-commit.sample": "d3825a70337940ebbd0a5c072984e13245920cdf8898bd225c8d27a6dfc9cb53",
+          ".git/hooks/pre-push.sample": "ecce9c7e04d3f5dd9d8ada81753dd1d549a9634b26770042b58dda00217d086a",
+          ".git/hooks/pre-rebase.sample": "4febce867790052338076f4e66cc47efb14879d18097d1d61c8261859eaaa7b3",
+          ".git/hooks/pre-receive.sample": "a4c3d2b9c7bb3fd8d1441c31bd4ee71a595d66b44fcf49ddb310252320169989",
+          ".git/hooks/prepare-commit-msg.sample": "e9ddcaa4189fddd25ed97fc8c789eca7b6ca16390b2392ae3276f0c8e1aa4619",
+          ".git/hooks/push-to-checkout.sample": "a53d0741798b287c6dd7afa64aee473f305e65d3f49463bb9d7408ec3b12bf5f",
+          ".git/hooks/sendemail-validate.sample": "44ebfc923dc5466bc009602f0ecf067b9c65459abfe8868ddc49b78e6ced7a92",
+          ".git/hooks/update.sample": "8d5f2fa83e103cf08b57eaa67521df9194f45cbdbcb37da52ad586097a14d106",
+          ".git/index": "5b8afd767a92d702cea2e51141bf4140afd60c4c6831c97ae60c4e7bad1f32dd",
+          ".git/info/exclude": "6671fe83b7a07c8932ee89164d1f2793b2318058eb8b98dc5c06ee0a5a3b0ec1",
+          ".git/logs/HEAD": "1090444267cae56ef79dcaea0e446b16192f337233cf5bf3df77188c60856552",
+          ".git/logs/refs/heads/main": "1090444267cae56ef79dcaea0e446b16192f337233cf5bf3df77188c60856552",
+          ".git/objects/02/6398a08f6d7d8f4422cdf8cb33dbaa0c8b037b": "22f8212122dccc2796b8756cb59a52fb1eb124d2e6484b94cb8d08abd46cda85",
+          ".git/objects/83/4f2a3555d910e6ef328ad0500defec421846ed": "d2af88b1a4493b5e499547414acf504ff6c7ea3092d9638f9b56138450671eb0",
+          ".git/objects/9c/3bbc380228f6efb1042ae6331c1238803d3084": "5cbf2ad35bf56b276afad86f2286089baa0f1d667b649c048fe6f5fe0951f46e",
+          ".git/objects/d5/25cf017d00395c08b55b6415fca9c45de5e96b": "1b6431ad2f6a070bd0e2b875ef89cc9f132272630ec406dce8b4d473df803c2d",
+          ".git/refs/heads/main": "e0d69d97fa8befaae35a90bd9ef601efad2de882a4b9281900cc771bd88966a5",
+          "README.md": "ffa3094534dec82138df38a2718b8e6cbed7abada199676ca608c590f5bf9f9a",
+          "service.py": "f08820e2f697fa6075de5c6c8f545b49f3fcac3b214722120c19b82f475b5e24"
+        },
+        "git_status": "",
+        "git_diff": ""
+      },
+      "delta": {
+        "changed": [],
+        "added": [],
+        "removed": [],
+        "git_status_unchanged": true,
+        "git_diff_unchanged": true
+      },
+      "proposal": {
+        "interface": "deliver_once(reminder_id: str) -> DeliveryOutcome",
+        "outcomes": {
+          "SENT": "This invocation received confirmation from the external sender.",
+          "ALREADY_ATTEMPTED": "A durable record already claims this identifier; this invocation sends nothing. This does not imply delivery succeeded.",
+          "UNKNOWN": "The sender attempt has an ambiguous outcome; this invocation sends no second message."
+        },
+        "caller_examples": [
+          "Normal queue handler: outcome = reminders.deliver_once(job.reminder_id); acknowledge the queue job after the durable attempt record is established. Handle UNKNOWN through reconciliation, not another unkeyed send.",
+          "Concurrent or duplicate queue handler: the same deliver_once(id) call returns ALREADY_ATTEMPTED when another invocation owns the durable identifier; the duplicate sends nothing."
+        ],
+        "alternative": "Exposing claim(id) followed by caller-owned sender.send(...) lets every caller accidentally bypass or repeat the side effect. Keeping the claim and send boundary inside deliver_once makes correct use simpler.",
+        "implementation_plan": [
+          "Add a durable unique identifier record and an atomic insert/claim operation; commit the claim before contacting the external sender. Keep existing health() behavior unchanged.",
+          "Implement deliver_once around that claim. Only the claim winner can make one sender attempt. Retain claimed state across crashes and timeouts; configure the sender adapter not to retry unkeyed sends automatically. Record confirmed completion or ambiguity without releasing the claim.",
+          "Use a fake sender for normal and duplicate cases, a concurrent-claim test against the actual disposable persistence mechanism, and crash/timeout tests around claim-before-send and send-before-result-recording. Verify at most one external invocation across redelivery."
+        ],
+        "tradeoff": "Without a proven provider idempotency contract, durable claim-before-send preserves at-most-one attempt but can lose a reminder if the process crashes after claiming and before sending. The README requires at most one external message, not eventual delivery. Confirm this delivery-loss tradeoff before adding stronger retry behavior. A provider key based on reminder_id can permit safer retries only after its durability and retention contract is verified.",
+        "scope": "Proposal only. No service or README edits, no implementation, no external messages. Patient UI, opt-in rules, and message wording remain settled.",
+        "coverage_gap": "No existing reminder callers, persistence layer, sender adapter, or reminder tests exist in the fixture. Proposed tests were not implemented or executed."
+      },
+      "scope_result": "All fixture files and Git bytes unchanged; no implementation or external messages.",
+      "checks": "No reminder behavior check was executed: this was design only and the fixture has no reminder implementation or runner."
+    }
+  },
+  "diff_checks": {
+    "review-only": {
+      "chunk_id": "54dae7",
+      "wall_time_seconds": 0.2284689,
+      "exit_code": 0,
+      "original_token_count": 0,
+      "output": ""
+    },
+    "agreed-implementation": {
+      "chunk_id": "30c832",
+      "wall_time_seconds": 0.1892168,
+      "exit_code": 0,
+      "original_token_count": 0,
+      "output": ""
+    },
+    "plan-only": {
+      "chunk_id": "20fcf6",
+      "wall_time_seconds": 0.187746,
+      "exit_code": 0,
+      "original_token_count": 0,
+      "output": ""
+    }
+  },
+  "observed_consolidation_result": "V1 preserved the three executed activity boundaries and discovered both needed references. V1 metadata was ambiguous for static complexity assessment; V2's targeted metadata-only rerouting addressed that wording gap for these authored prompts. No fixture was rerun after the wording change, so the earlier execution evidence must not be presented as a V2 runtime test.",
+  "limitations": [
+    "Single-run authored-instruction tests; not live-user observation.",
+    "No automatic host-discovery or installation test.",
+    "No uplift measurement, baseline comparison, or statistical performance claim.",
+    "Only three of 22 selected routes were actually executed; remaining selections are metadata judgments.",
+    "No UI, research, conflict, handoff, prototype, domain, or simulated-discussion execution was tested.",
+    "The reviewer had the explicit consolidated activity metadata, not a real host's automatic selection trace.",
+    "Opaque .git historical-byte fingerprinting is disclosed separately from content reading."
+  ],
+  "versions": {
+    "initial": {
+      "label": "V1: initial metadata routing and all three fixture executions",
+      "raw_skill_file_hashes": "Unavailable: not measured before the parent revised entrypoints. Do not infer them from the later files.",
+      "provenance": "Original metadata and full bodies were observed in this agent's tool transcript. The original kp-review description was 'Review code changes or an existing product interface for actionable defects. Use for assessment requests; report findings without editing unless fixes are also requested.' The original kp-develop description was 'Implement, test or finish an agreed software change. Use for delivery work, including test-first implementation, requested verification, documentation edits and active Git conflicts; preserve plan-only and review-only boundaries.'",
+      "executed_fixtures": [
+        "review-only",
+        "agreed-implementation",
+        "plan-only"
+      ]
+    },
+    "current": {
+      "label": "V2: current metadata-only targeted re-routing after parent edits",
+      "skills": {
+        "kp-review": {
+          "metadata": "name: kp-review\ndescription: Assess a code change, named code area or existing product interface. Use for actionable findings, code-quality analysis or UI critique; do not edit unless fixes are also requested.",
+          "normalized_metadata_sha256": "5181b0f7bd6736b4d3482380bec2c8f85607fe48c997440a613b7380157f9c52",
+          "full_file_sha256": "dc8c9fd5fa06c5b3e898f50559dde11a563d54edb85869eb254dd6b3121e2b5c"
+        },
+        "kp-develop": {
+          "metadata": "name: kp-develop\ndescription: Implement or verify an agreed software change, including test-first work, documentation edits and active Git conflicts. Use for delivery, not a plan or assessment by itself.",
+          "normalized_metadata_sha256": "f64d1ca5aaf4016a3af600468056a660218b37cc2adbac97908683e1a562eba4",
+          "full_file_sha256": "1cdbb3d6f505d6d3d36b3018ffbea207fb218dcda7592ab846e37b1c2b2660ee"
+        },
+        "kp-simplify": {
+          "metadata": "name: kp-simplify\ndescription: Simplify scoped existing code while preserving behavior, contracts, and project conventions. Use for requested cleanup or a demonstrated clarity problem in changed code.",
+          "normalized_metadata_sha256": "70da42065dbb13566d99d8b54902ad9654b34f9e0643f4063681b2452521b7e3",
+          "full_file_sha256": "7d9c2dcb4eccbe95e9c267bcfb8e86f8f9756e856a7cce042718ce5decc79453"
+        },
+        "kp-shape": {
+          "metadata": "name: kp-shape\ndescription: Clarify an early idea or design a software change before implementation. Use for product exploration, architecture choices, domain questions, requested plans or bounded design experiments; preserve already settled decisions.",
+          "normalized_metadata_sha256": "e980776a838e100f286a13d936c7152a6a5d7ba0566e67c3280cc7224b20a4db",
+          "full_file_sha256": "2c32c069bfd053205e3239a988b5b844e086f417dd27007a904e1a5951c7face"
+        }
+      },
+      "execution": "No fixture re-execution. This pass measures metadata interpretation only.",
+      "rerouting": [
+        {
+          "id": "daily-01",
+          "skill": "kp-develop",
+          "reason": "Direct agreed implementation remains delivery."
+        },
+        {
+          "id": "daily-06",
+          "skill": "kp-shape",
+          "reason": "Requested plans remain shape; develop now explicitly excludes a plan by itself."
+        },
+        {
+          "id": "daily-07",
+          "skill": "kp-simplify",
+          "reason": "Scoped behavior-preserving cleanup remains simplify."
+        },
+        {
+          "id": "daily-09",
+          "skill": "kp-review",
+          "reason": "Code-quality analysis and named code area now explicitly cover this assessment; no refactor is authorized."
+        }
+      ],
+      "remaining_ambiguity": "No material ambiguity among these four explicit prompts. Runtime host selection was not observed. Improved wording fit is an interpretation, not measured uplift."
+    }
+  },
+  "logical_git_state": {
+    "before": "Porcelain status showed no staged entries in any fixture: review/implementation had only unstaged cart.py; plan was clean.",
+    "after_staged_diff_checks": {
+      "review-only": {
+        "chunk_id": "d756b3",
+        "wall_time_seconds": 0.2033173,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      },
+      "agreed-implementation": {
+        "chunk_id": "214364",
+        "wall_time_seconds": 0.1873559,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      },
+      "plan-only": {
+        "chunk_id": "007d29",
+        "wall_time_seconds": 0.1956412,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    "conclusion": "All final cached diffs are empty (exit 0). The implementation index-byte anomaly does not imply a staged content change."
+  }
+}

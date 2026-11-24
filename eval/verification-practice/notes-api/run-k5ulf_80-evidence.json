@@ -1,0 +1,474 @@
+{
+  "started_utc": "2026-10-31T21:52:05.269699+00:00",
+  "python": "3.12.3 | packaged by Anaconda, Inc. | (main, May  6 2024, 19:42:21) [MSC v.1916 64 bit (AMD64)]",
+  "root": "<notes-api>",
+  "server_sha256_before": "d21807a04c17993e50da383760f8f23ddd154e92f90d9f7d4c18e5d7dc76fda8",
+  "fresh_directory_empty": true,
+  "processes": [
+    {
+      "label": "initial",
+      "command": [
+        "<python>",
+        "-u",
+        "<notes-api>\\server.py",
+        "--data-dir",
+        "<notes-api>\\verification-results\\run-k5ulf_80\\scratch-data",
+        "--port",
+        "0"
+      ],
+      "pid": 47092,
+      "cwd": "<notes-api>",
+      "server_sha256": "d21807a04c17993e50da383760f8f23ddd154e92f90d9f7d4c18e5d7dc76fda8",
+      "port": 57971,
+      "exit_code_after_owned_stop": 1,
+      "confirmed_exited": true
+    },
+    {
+      "label": "restart",
+      "command": [
+        "<python>",
+        "-u",
+        "<notes-api>\\server.py",
+        "--data-dir",
+        "<notes-api>\\verification-results\\run-k5ulf_80\\scratch-data",
+        "--port",
+        "0"
+      ],
+      "pid": 53692,
+      "cwd": "<notes-api>",
+      "server_sha256": "d21807a04c17993e50da383760f8f23ddd154e92f90d9f7d4c18e5d7dc76fda8",
+      "port": 57993,
+      "exit_code_after_owned_stop": 1,
+      "confirmed_exited": true
+    }
+  ],
+  "requests": [
+    {
+      "utc": "2026-10-31T21:52:05.799067+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/health",
+      "input": null,
+      "status": 200,
+      "output": {
+        "process": "up"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:05.811597+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:05.914445+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:06.015815+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:06.129524+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:06.252986+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:06.356238+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:06.461732+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:06.565984+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:06.670196+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:06.776762+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:06.881043+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:06.983905+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:07.086347+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:07.190854+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:07.294470+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:07.411978+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:07.515642+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:07.619356+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 200,
+      "output": []
+    },
+    {
+      "utc": "2026-10-31T21:52:07.634488+00:00",
+      "method": "POST",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": {
+        "title": "Verification note: create, list, persist"
+      },
+      "status": 201,
+      "output": {
+        "id": 1,
+        "title": "Verification note: create, list, persist"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:07.666109+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57971/notes",
+      "input": null,
+      "status": 200,
+      "output": [
+        {
+          "id": 1,
+          "title": "Verification note: create, list, persist"
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-31T21:52:07.924957+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:08.049811+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:08.174159+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:08.278906+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:08.381133+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:08.485831+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:08.588687+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:08.702026+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:08.805088+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:08.908920+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:09.017617+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:09.120887+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:09.223800+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:09.327166+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:09.430325+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:09.532867+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:09.636351+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:09.740051+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:09.843626+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 503,
+      "output": {
+        "error": "initializing"
+      }
+    },
+    {
+      "utc": "2026-10-31T21:52:09.947684+00:00",
+      "method": "GET",
+      "url": "http://127.0.0.1:57993/notes",
+      "input": null,
+      "status": 200,
+      "output": [
+        {
+          "id": 1,
+          "title": "Verification note: create, list, persist"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "Fresh /notes became usable and returned []",
+    "POST returned 201; GET and notes.json contained the same note",
+    "GET after owned process restart retained the note"
+  ],
+  "git_head": "c6091ac718c8841e86c57670fba5842f621a8db1",
+  "status": "passed",
+  "scratch_removed": true,
+  "server_sha256_after": "d21807a04c17993e50da383760f8f23ddd154e92f90d9f7d4c18e5d7dc76fda8",
+  "finished_utc": "2026-10-31T21:52:09.955200+00:00"
+}

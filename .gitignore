@@ -4,3 +4,4 @@ __pycache__/
 .venv/
 private/
 .pytest_cache/
+eval/verification-practice/notes-api/verification-results/run-*/
