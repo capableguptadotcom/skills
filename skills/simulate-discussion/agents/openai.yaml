@@ -1,0 +1,6 @@
+interface:
+  display_name: "Simulate Discussion"
+  short_description: "Explore a decision through distinct viewpoints"
+  default_prompt: "Use $simulate-discussion to simulate a discussion about this decision."
+policy:
+  allow_implicit_invocation: false

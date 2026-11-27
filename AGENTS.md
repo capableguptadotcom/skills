@@ -1,12 +1,21 @@
-# Maintaining our daily skills
+# Maintaining these skills
 
-The product is the small set in `skills/kp-*/SKILL.md`. Each entrypoint owns a recognizable activity and keeps conditional detail in its own references. A user should not need the catalog in order to describe ordinary development work.
+The product is the set of folders in `skills/`. Each folder is one skill that does one job, installs on its own, and works the same in Codex and Claude Code.
 
-Change a skill for a concrete task or observed failure in our work. State what behavior should improve and what neighboring behavior must remain intact. Prefer revising the existing owner to adding another trigger. Keep a separate skill only when its output, procedure or scope would otherwise become ambiguous.
+## Change a skill for a reason
 
-Keep every folder independently installable. Do not require sibling skills, personal paths, particular models, a fixed agent count or an unavailable integration. Use the actual host tools. Preserve the user's chosen scope, settled decisions and existing authorization.
+Start from a concrete problem: a `skill-feedback` report, an evaluation failure, or a repeated correction in real work. Do not add a skill or a rule because an upstream collection has one. Prefer improving the skill that owns the job over adding another trigger.
 
-Before publishing, run:
+For each change, name the behavior that should improve and the neighboring request that must stay unchanged. Add the case to `eval/<skill>/cases.json` and confirm it fails before the change and passes after. Fix at the highest level that works: a script or validator rule first, then a template or reference, then wording. Try a shorter version first.
+
+## Keep every skill portable
+
+- No references outside the skill's own folder, no sibling paths, no personal paths, no particular model or agent count.
+- Scripts are Python, read-only unless the skill's job is to write, and never use the network.
+- Explicit-only skills set both `disable-model-invocation: true` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`.
+- A reference, script or template stays only if an evaluation case uses it.
+
+## Before publishing
 
 ```sh
 python scripts/validate.py
@@ -14,6 +23,8 @@ python -m unittest discover -s tests -v
 git diff --check
 ```
 
-For a substantive instruction change, also exercise a realistic case and a relevant boundary case. Describe a single-run smoke test as such; do not claim comparative improvement without a comparable baseline.
+Describe a single run as a smoke test. Do not claim an improvement without a comparable no-skill or previous-version baseline.
 
-The upstream audit survives at tag `upstream-audit-2026-10-31`. It is historical research, not an active backlog or a source of automatic changes. Do not restore catalog synchronization or build session-based learning unless that work is requested. Keep raw conversations and private material out of this public repository.
+## Session data
+
+Developers may use their own session logs to report skill problems through `skill-feedback`. Only sanitized synthetic cases enter this public repository: no transcripts, code, project names, customer data or credentials. Raw material stays local and ignored, under `private/`.
