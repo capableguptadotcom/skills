@@ -186,6 +186,16 @@ class SweepTests(unittest.TestCase):
         self.assertNotIn('research', shared.stdout)
         self.assertNotIn('@', shared.stdout)
 
+    def test_large_world_surfaces_its_planted_patterns(self):
+        large = ROOT / 'eval/fixtures/session-sweep-large/homes'
+        data = json.loads(self.sweep('--json', codex=large / 'codex', claude=large / 'claude',
+                                     skills=large / 'skills').stdout)
+        rows = {r['skill']: r for r in data['skills']}
+        self.assertEqual(data['coverage']['sessions'], 208)
+        self.assertTrue(rows['csv-export']['hint'].startswith('often pushed back'))
+        self.assertTrue(rows['db-migrations']['hint'].startswith('only by name'))
+        self.assertTrue(rows['invoice-themes']['hint'].startswith('unused'))
+
     def test_codex_database_maintenance_and_shell_variables(self):
         with tempfile.TemporaryDirectory() as tmp:
             home, work = Path(tmp, 'codex'), Path(tmp, 'skills-repo')
