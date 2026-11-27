@@ -172,6 +172,25 @@ class RescoreTests(unittest.TestCase):
             self.assertTrue(rows[1]['passed'], rows[1]['checks'])
 
 
+    def test_harness_files_and_failed_runs_do_not_count_against_the_skill(self):
+        base = {'skill': 'diagnose', 'case': 'zero-backoff-diagnose', 'condition': 'with', 'repeat': 0,
+                'answer': 'schedule_retry uses `if not delay`, so 0 is falsy.', 'passed': False, 'checks': [],
+                'patch': 'diff --git a/.eval-last-message.txt b/.eval-last-message.txt\n',
+                'skill_loaded': True, 'tool_calls': 3, 'seconds': 1, 'usage': {}, 'exit': 0}
+        limited = {**base, 'repeat': 1, 'answer': '', 'tool_calls': 0, 'exit': 1,
+                   'stderr': '{"type":"error","message":"You have hit your usage limit."}'}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp, 'results.jsonl')
+            path.write_text(json.dumps(base) + '\n' + json.dumps(limited) + '\n', encoding='utf-8')
+            result = run(ROOT / 'scripts/run_evals.py', 'rescore', path, isolated=False)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            rows = [json.loads(line) for line in path.read_text(encoding='utf-8').splitlines()]
+            self.assertTrue(rows[0]['passed'], rows[0]['checks'])
+            self.assertEqual(rows[1]['error'], 'usage limit')
+            self.assertIn('Left out as invalid: 1 x usage limit', result.stdout)
+            self.assertIn('1/1', result.stdout)
+
+
 class AuditTests(unittest.TestCase):
     def test_reports_dependencies_and_one_sided_invocation(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -25,8 +25,8 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
 import time
+import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -76,8 +76,19 @@ def command(host, prompt, workdir, model=None, writable=True):
     args = [codex_binary(), 'exec', '--json', '--skip-git-repo-check',
             '-s', 'workspace-write' if writable else 'read-only',
             '-c', 'approval_policy="never"', '-c', personal_skill_overrides(),
-            '-o', str(Path(workdir) / '.eval-last-message.txt')]
+            '-o', str(last_message(workdir))]
     return args + (['-m', model] if model else []) + [prompt]
+
+
+def last_message(workdir):
+    """Codex writes its final answer here: beside the workspace, so it is never counted as an edit."""
+    return Path(workdir).with_name(Path(workdir).name + '.last-message.txt')
+
+
+def harness_file(path):
+    """Files the harness or the host creates, which never count as the agent's edits."""
+    return (path.startswith(('.claude/', '.agents/', '.eval-')) or '__pycache__' in path
+            or path.endswith('.pyc'))
 
 
 def git(workdir, *args):
@@ -85,10 +96,35 @@ def git(workdir, *args):
                           encoding='utf-8', errors='replace').stdout
 
 
+def new_workdir(prefix):
+    # Not tempfile.mkdtemp: on Windows its owner-only ACL locks out Codex's sandbox account, which then
+    # answers from guesses ("Windows denied access to the workspace") instead of reading the code.
+    WORK_ROOT.mkdir(parents=True, exist_ok=True)
+    workdir = WORK_ROOT / f'{prefix}-{uuid.uuid4().hex[:10]}'
+    workdir.mkdir()
+    return workdir
+
+
+# A run that never reached the model or the workspace says nothing about the skill.
+HARNESS_FAILURE = re.compile(r'usage limit|rate limit|denied (read |write )?access to the (active |supplied )?workspace',
+                             re.I)
+
+
+def run_error(record):
+    """Why a run is invalid, or '' when it is a real attempt."""
+    text = record.get('stderr', '') + '\n' + record.get('answer', '')
+    hit = HARNESS_FAILURE.search(text)
+    if hit:
+        return hit[0]
+    if record.get('exit') not in (0, None) and not record.get('answer'):
+        return f"exit {record.get('exit')} with no answer"
+    return ''
+
+
 def prepare(case, skill, host, condition, skill_path=None, peers=()):
     """Copy the fixture into a fresh repo. 'with' installs the skill (and any peers) at project level."""
     WORK_ROOT.mkdir(parents=True, exist_ok=True)
-    workdir = Path(tempfile.mkdtemp(prefix=f'{skill}-', dir=WORK_ROOT))
+    workdir = new_workdir(skill)
     shutil.copytree(ROOT / case['fixture'], workdir, dirs_exist_ok=True)
     git(workdir, 'init', '-q')
     (workdir / '.git/info/exclude').write_text('__pycache__/\n*.pyc\n', encoding='utf-8')
@@ -133,7 +169,7 @@ def parse(host, stdout, workdir, skill):
             if event.get('type') == 'turn.completed':
                 usage = event.get('usage') or usage
     if host == 'codex':
-        last = workdir / '.eval-last-message.txt'
+        last = last_message(workdir)
         answer = last.read_text(encoding='utf-8', errors='replace') if last.exists() else ''
     return {'skill_loaded': skill in loaded, 'skills_loaded': sorted(loaded - {''}), 'tool_calls': tools,
             'usage': usage, 'cost_usd': cost, 'answer': answer}
@@ -164,7 +200,7 @@ def full_patch(workdir):
 def check(case, workdir, answer, skill, patch=''):
     results = []
     changed = [line[3:] for line in git(workdir, 'status', '--porcelain').splitlines()
-               if not line[3:].startswith(('.claude/', '.agents/', '.eval-')) and '__pycache__' not in line]
+               if not harness_file(line[3:])]
     for spec in case.get('checks', []):
         kind, ok, detail = spec['type'], False, ''
         if kind == 'files_unchanged':
@@ -223,22 +259,36 @@ def run(args):
                           'passed': all(c['passed'] for c in checks), 'checks': checks,
                           'diff': git(workdir, 'diff', '--stat')[-1500:], 'patch': patch[:8000], **parsed}
                 if proc.returncode != 0:
-                    record['stderr'] = proc.stderr[-800:]
+                    errors = [l for l in proc.stdout.splitlines() if '"error"' in l or '"turn.failed"' in l]
+                    record['stderr'] = (proc.stderr[-400:] + '\n'.join(errors)[-800:])
+                record['error'] = run_error(record)
                 with out.open('a', encoding='utf-8') as handle:
                     handle.write(json.dumps(redact_record(record)) + '\n')
                 print(f"{case['id']:<22} {condition:<8} r{repeat} pass={record['passed']!s:<5} "
                       f"loaded={parsed['skill_loaded']!s:<5} tools={parsed['tool_calls']:<3} "
-                      f"{record['seconds']}s exit={proc.returncode}", flush=True)
+                      f"{record['seconds']}s exit={proc.returncode}"
+                      + (f" INVALID: {record['error']}" if record['error'] else ''), flush=True)
+                if 'usage limit' in record['error'].lower():
+                    print('Stopping: the host reports a usage limit, so later runs would be invalid too.')
+                    shutil.rmtree(workdir, ignore_errors=True)
+                    summarize(out)
+                    return
                 shutil.rmtree(workdir, ignore_errors=True)
+                last_message(workdir).unlink(missing_ok=True)
     print(f'\nResults: {out.relative_to(ROOT)}')
     summarize(out)
 
 
 def summarize(path):
     rows = [json.loads(line) for line in Path(path).read_text(encoding='utf-8').splitlines() if line]
-    groups = {}
+    groups, invalid = {}, {}
     for row in rows:
+        if run_error(row):
+            invalid[run_error(row)] = invalid.get(run_error(row), 0) + 1
+            continue
         groups.setdefault((row['case'], row['condition']), []).append(row)
+    if invalid:
+        print('Left out as invalid: ' + ', '.join(f'{n} x {why}' for why, n in invalid.items()))
     print(f"{'case':<22} {'cond':<8} {'pass':>6} {'loaded':>7} {'tools':>6} {'secs':>6} {'tokens/cost':>12}")
     for (case, condition), items in sorted(groups.items()):
         passed = sum(r['passed'] for r in items)
@@ -264,7 +314,7 @@ def rescore(args):
     for row in rows:
         specs = cases[row['case']].get('checks', [])
         files = sorted({m for m in re.findall(r'^diff --git a/(\S+)', row.get('patch', ''), re.M)
-                        if '__pycache__' not in m and not m.endswith('.pyc')})
+                        if not harness_file(m)})
         old = {c['check']: c for c in row['checks']}
         new = []
         for spec in specs:
@@ -289,7 +339,7 @@ def rescore(args):
             new.append({'check': name, 'passed': ok, 'detail': str(detail)[:300]})
         passed = all(c['passed'] for c in new)
         changed_count += passed != row['passed']
-        row['checks'], row['passed'] = new, passed
+        row['checks'], row['passed'], row['error'] = new, passed, run_error(row)
     path.write_text(''.join(json.dumps(redact_record(r)) + '\n' for r in rows), encoding='utf-8')
     print(f'Rescored {len(rows)} runs; {changed_count} changed pass/fail.')
     summarize(path)
@@ -329,7 +379,7 @@ def ask_judge(case, first, second, model):
     prompt = JUDGE_PROMPT.format(task=case['prompt'], truth=case['judge_truth'],
                                  a=first['answer'][:6000], pa=first.get('patch', '')[:4000] or '(none)',
                                  b=second['answer'][:6000], pb=second.get('patch', '')[:4000] or '(none)')
-    workdir = Path(tempfile.mkdtemp(prefix='judge-', dir=WORK_ROOT))
+    workdir = new_workdir('judge')
     proc = subprocess.run(['claude', '-p', prompt, '--output-format', 'json', '--setting-sources', 'project',
                            '--no-session-persistence', '--model', model, '--disallowedTools',
                            'Bash', 'Edit', 'Write', 'Read', 'Glob', 'Grep', 'Skill'],
@@ -358,7 +408,7 @@ def judge(args):
         other = next((r for r in rows if r['case'] == row['case'] and r['repeat'] == row['repeat']
                       and r['condition'] == right), None)
         case = cases.get(row['case'], {})
-        if other is None or not case.get('judge_truth'):
+        if other is None or not case.get('judge_truth') or run_error(row) or run_error(other):
             continue
         flip = rng.random() < 0.5
         orders = [(other, row) if flip else (row, other)]
@@ -395,8 +445,7 @@ def judge(args):
 
 
 def probe(args):
-    WORK_ROOT.mkdir(parents=True, exist_ok=True)
-    workdir = Path(tempfile.mkdtemp(prefix='probe-', dir=WORK_ROOT))
+    workdir = new_workdir('probe')
     git(workdir, 'init', '-q')
     prompt = 'List the names of every skill available to you, comma separated, nothing else.'
     proc = subprocess.run(command(args.host, prompt, workdir, args.model, writable=False), cwd=workdir,
