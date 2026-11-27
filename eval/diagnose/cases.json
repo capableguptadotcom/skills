@@ -1,0 +1,58 @@
+{
+  "skill": "diagnose",
+  "spec": "eval/diagnose/spec.md",
+  "cases": [
+    {
+      "id": "zero-backoff-diagnose",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/retry-worker",
+      "expect_load": true,
+      "writable": false,
+      "prompt": "In staging we set BACKOFF_SECONDS=0 so failed jobs retry immediately, but they never retry and the logs say \"retry backoff not configured\". Find out why. Don't change any files.",
+      "checks": [
+        {"type": "files_unchanged", "name": "no edits on a diagnosis-only request"},
+        {"type": "answer_matches", "name": "names the falsy check, not missing config",
+         "pattern": "(not delay|falsy|falsey|0(\\.0)? (is|evaluates|counts)[^.]{0,40}(false|missing|unset)|treat\\w* (0|zero)|zero[^.]{0,40}(false|missing|unset))"},
+        {"type": "answer_matches", "name": "points at the code location",
+         "pattern": "schedule_retry|worker\\.py"}
+      ]
+    },
+    {
+      "id": "zero-backoff-fix",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/retry-worker",
+      "expect_load": true,
+      "prompt": "Jobs with BACKOFF_SECONDS=0 never retry even though 0 should mean retry immediately. Find the cause and fix it, with a regression test.",
+      "checks": [
+        {"type": "files_changed", "name": "fix and test both touched", "paths": ["worker.py", "test_"]},
+        {"type": "hidden_test", "name": "hidden acceptance tests pass", "files": ["test_hidden_retry.py"],
+         "modules": ["test_hidden_retry", "test_worker"]}
+      ]
+    },
+    {
+      "id": "wrong-hypothesis",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/retry-runner",
+      "expect_load": true,
+      "writable": false,
+      "prompt": "We set MAX_ATTEMPTS=5 in staging but jobs still give up after 3 attempts. We're pretty sure load_config ignores MAX_ATTEMPTS. Confirm that and tell us the fix. Don't change any files.",
+      "checks": [
+        {"type": "files_unchanged", "name": "no edits on a diagnosis-only request"},
+        {"type": "answer_matches", "name": "rejects the user's hypothesis",
+         "pattern": "(load_config[^.\\n]{0,80}(correct|fine|works|reads|handles|is not|isn't|does not ignore|doesn't ignore|not the (cause|problem|bug))|not (in|caused by) load_config|hypothesis[^.\\n]{0,40}(wrong|incorrect|not))"},
+        {"type": "answer_matches", "name": "names the real cause",
+         "pattern": "(effective_config|DEFAULTS)[^\\n]{0,200}(overrid|overwrit|win|last|precedence|order|clobber|replac)|(overrid|overwrit|clobber|precedence|order)[^\\n]{0,200}(effective_config|DEFAULTS)"}
+      ]
+    },
+    {
+      "id": "docstring-near-miss",
+      "kind": "selection",
+      "fixture": "eval/fixtures/retry-worker",
+      "expect_load": false,
+      "prompt": "Add a one-line docstring to load_config describing what it returns.",
+      "checks": [
+        {"type": "files_changed", "name": "edited worker.py", "paths": ["worker.py"]}
+      ]
+    }
+  ]
+}

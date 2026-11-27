@@ -14,8 +14,9 @@ SESSION_INFO = ROOT / 'skills/skill-feedback/scripts/session_info.py'
 SANITIZE = ROOT / 'skills/skill-feedback/scripts/sanitize_check.py'
 
 
-def run(script, *args, cwd=None):
-    return subprocess.run([sys.executable, '-I', str(script), *map(str, args)], cwd=cwd,
+def run(script, *args, cwd=None, isolated=True):
+    flags = ['-I'] if isolated else []
+    return subprocess.run([sys.executable, *flags, str(script), *map(str, args)], cwd=cwd,
                           capture_output=True, text=True, encoding='utf-8')
 
 
@@ -147,6 +148,26 @@ class SanitizeTests(unittest.TestCase):
             result = self.check('Seen in secret-product today.\n', '--project', project)
             self.assertEqual(result.returncode, 1)
             self.assertIn('denied term: secret-product', result.stdout)
+
+
+class AuditTests(unittest.TestCase):
+    def test_reports_dependencies_and_one_sided_invocation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, body, meta in [
+                ('alpha', 'Read [beta](../beta/SKILL.md) and the [gone](../gone/SKILL.md) skill.', ''),
+                ('beta', 'Standalone.', 'disable-model-invocation: true\n'),
+            ]:
+                (root / name).mkdir()
+                (root / name / 'SKILL.md').write_text(
+                    f'---\nname: {name}\ndescription: test\n{meta}---\n{body}\n', encoding='utf-8')
+            result = run(ROOT / 'scripts/audit_skills.py', root, isolated=False)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            alpha = next(line for line in result.stdout.splitlines() if line.startswith('alpha'))
+            beta = next(line for line in result.stdout.splitlines() if line.startswith('beta'))
+            self.assertIn('beta', alpha)
+            self.assertIn('MISSING: gone', alpha)
+            self.assertIn('explicit-claude-only', beta)
 
 
 if __name__ == '__main__':
