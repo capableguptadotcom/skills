@@ -1,6 +1,6 @@
 ---
 name: diagnose
-description: Use when something is broken, failing, flaky, throwing or slow and the cause is unknown. Reproduces it, tests competing causes and reports the cause with evidence. Fixes only when asked. Not for reviewing a working change.
+description: Use first for any bug - an error, a failing or flaky test, a wrong result, a crash or a slowdown - including when the user already names a suspected cause. Reproduces before fixing, tests competing causes, and fixes the code that owns the defect without hiding the symptom.
 ---
 
 # Diagnose from evidence

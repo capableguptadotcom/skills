@@ -150,6 +150,28 @@ class SanitizeTests(unittest.TestCase):
             self.assertIn('denied term: secret-product', result.stdout)
 
 
+class RescoreTests(unittest.TestCase):
+    def test_rescore_reapplies_text_checks_and_keeps_workspace_checks(self):
+        patch = ('diff --git a/money.py b/money.py\n+++ b/money.py\n+    return x\n'
+                 'diff --git a/__pycache__/money.cpython-312.pyc b/__pycache__/money.cpython-312.pyc\n')
+        record = {'skill': 'diagnose', 'case': 'invoice-wrong-hypothesis-fix', 'condition': 'with', 'repeat': 0,
+                  'answer': "The bug wasn't in `format_money`.", 'patch': patch, 'passed': False,
+                  'checks': [{'check': 'half-cent discounts round up', 'passed': True, 'detail': ''},
+                             {'check': 'rejects the format_money hypothesis', 'passed': False, 'detail': ''}],
+                  'skill_loaded': False, 'tool_calls': 1, 'seconds': 1, 'usage': {}}
+        diag = {**record, 'case': 'zero-backoff-diagnose', 'answer': 'schedule_retry uses `if not delay`, so 0 is falsy.',
+                'patch': 'diff --git a/__pycache__/worker.cpython-312.pyc b/__pycache__/worker.cpython-312.pyc\n',
+                'checks': []}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp, 'results.jsonl')
+            path.write_text(json.dumps(record) + '\n' + json.dumps(diag) + '\n', encoding='utf-8')
+            result = run(ROOT / 'scripts/run_evals.py', 'rescore', path, isolated=False)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            rows = [json.loads(line) for line in path.read_text(encoding='utf-8').splitlines()]
+            self.assertTrue(rows[0]['passed'], rows[0]['checks'])
+            self.assertTrue(rows[1]['passed'], rows[1]['checks'])
+
+
 class AuditTests(unittest.TestCase):
     def test_reports_dependencies_and_one_sided_invocation(self):
         with tempfile.TemporaryDirectory() as tmp:
