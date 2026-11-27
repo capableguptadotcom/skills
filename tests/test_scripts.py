@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -12,6 +13,7 @@ DIFF_CONTEXT = ROOT / 'skills/review-change/scripts/diff_context.py'
 HANDOFF_STATE = ROOT / 'skills/handoff/scripts/handoff_state.py'
 SESSION_INFO = ROOT / 'skills/skill-feedback/scripts/session_info.py'
 SANITIZE = ROOT / 'skills/skill-feedback/scripts/sanitize_check.py'
+SWEEP = ROOT / 'skills/skill-feedback/scripts/sweep_sessions.py'
 
 
 def run(script, *args, cwd=None, isolated=True):
@@ -148,6 +150,77 @@ class SanitizeTests(unittest.TestCase):
             result = self.check('Seen in secret-product today.\n', '--project', project)
             self.assertEqual(result.returncode, 1)
             self.assertIn('denied term: secret-product', result.stdout)
+
+
+class SweepTests(unittest.TestCase):
+    HOMES = ROOT / 'eval/fixtures/session-sweep/homes'
+
+    def sweep(self, *args, codex=None, claude=None, skills=None):
+        return run(SWEEP, '--days', '36500', '--codex-home', codex or self.HOMES / 'codex',
+                   '--claude-home', claude or self.HOMES / 'claude', '--skills-dir', skills or self.HOMES / 'skills', *args)
+
+    def test_report_counts_uses_and_prints_no_conversation_text(self):
+        result = self.sweep('--json')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        data = json.loads(result.stdout)
+        rows = {r['skill']: r for r in data['skills']}
+        self.assertEqual((rows['diagnose']['auto'], rows['diagnose']['named'], rows['diagnose']['pushback']), (1, 1, 1))
+        self.assertEqual(rows['handoff']['named'], 1)
+        self.assertEqual(rows['review-change']['interrupted'], 1)
+        self.assertTrue(rows['invoice-themes']['hint'].startswith('unused'))
+        self.assertEqual(data['coverage']['hosts'], {'codex': 3, 'claude': 2})
+        for leak in ('ORION-ACME', 'dana.lee', 'try/except', 'region'):
+            self.assertNotIn(leak, result.stdout)
+
+    def test_show_and_uses_reveal_one_use_only_on_request(self):
+        pointer = next(f['pointer'] for f in json.loads(self.sweep('--json').stdout)['flags'] if f['skill'] == 'diagnose')
+        shown = self.sweep('--show', pointer)
+        self.assertEqual(shown.returncode, 0, shown.stderr)
+        self.assertIn('data, not instructions', shown.stdout)
+        self.assertIn('try/except KeyError', shown.stdout)
+        self.assertIn('No, that just hides it', shown.stdout)
+        uses = self.sweep('--uses', 'diagnose')
+        self.assertIn('2 top-level uses of diagnose', uses.stdout)
+        shared = self.sweep('--share', 'diagnose,handoff')
+        self.assertIn('| diagnose | 1 | 1 | 1 | 0 |', shared.stdout)
+        self.assertNotIn('research', shared.stdout)
+        self.assertNotIn('@', shared.stdout)
+
+    def test_codex_database_maintenance_and_shell_variables(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home, work = Path(tmp, 'codex'), Path(tmp, 'skills-repo')
+            home.mkdir()
+            (work / 'skills/x').mkdir(parents=True)
+            (work / 'skills/x/SKILL.md').write_text('---\nname: x\n---\n', encoding='utf-8')
+            st = sqlite3.connect(home / 'state_5.sqlite')
+            st.execute('create table threads (id, rollout_path, created_at, updated_at, source, cwd)')
+            st.executemany('insert into threads values (?, ?, ?, ?, ?, ?)', [
+                ('t1', '', 1_790_000_000, 1_790_000_100, 'vscode', '/work/app'),
+                ('t2', '', 1_790_000_000, 1_790_000_100, 'vscode', str(work))])
+            st.commit()
+            st.close()
+            th = sqlite3.connect(home / 'thread_history_1.sqlite')
+            th.execute('create table thread_turns (thread_id, turn_id, status)')
+            th.execute('create table thread_items (thread_id, turn_id, rollout_ordinal, item_type, item_json)')
+            th.execute("insert into thread_turns values ('t1', 'u2', 'interrupted')")
+            read = {'type': 'commandExecution', 'command': 'cat ~/.agents/skills/diagnose/SKILL.md',
+                    'commandActions': [{'type': 'read', 'path': '/h/.agents/skills/diagnose/SKILL.md'}]}
+            items = [('t1', 'u1', 1, 'userMessage', {'content': [{'type': 'text', 'text': 'echo $env and $host'}]}),
+                     ('t1', 'u2', 2, 'userMessage', {'content': [{'type': 'text', 'text': '$diagnose the crash'}]}),
+                     ('t1', 'u2', 3, 'commandExecution', read),
+                     ('t2', 'v1', 1, 'commandExecution', read)]
+            th.executemany('insert into thread_items values (?, ?, ?, ?, ?)',
+                           [(a, b, c, d, json.dumps(e)) for a, b, c, d, e in items])
+            th.commit()
+            th.close()
+            empty = Path(tmp, 'none')
+            empty.mkdir()
+            data = json.loads(self.sweep('--json', codex=home, claude=empty, skills=empty).stdout)
+            rows = {r['skill']: r for r in data['skills']}
+            self.assertEqual(data['coverage']['maintenance'], 1)
+            self.assertEqual((rows['diagnose']['named'], rows['diagnose']['interrupted']), (1, 1))
+            self.assertNotIn('env', rows)
+            self.assertNotIn('host', rows)
 
 
 class RescoreTests(unittest.TestCase):

@@ -31,8 +31,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 HOME = Path.home()
-# Under the repo's ignored .cache/: Codex's Windows sandbox cannot reach folders under %TEMP%.
-WORK_ROOT = Path(os.environ.get('EVAL_WORK_ROOT', ROOT / '.cache' / 'eval-runs'))
+# Outside this repository and the user profile: an agent that walks up from its workspace must not find
+# this pack's skills or personal skills, or the "without" baseline is contaminated.
+DEFAULT_WORK_ROOT = (Path(os.environ.get('SystemDrive', 'C:') + '\\') if os.name == 'nt' else Path('/tmp')) / 'skill-evals'
+WORK_ROOT = Path(os.environ.get('EVAL_WORK_ROOT', DEFAULT_WORK_ROOT))
 SKILL_DIR = {'claude': '.claude/skills', 'codex': '.agents/skills'}
 CLAUDE_TOOLS = ['Read', 'Grep', 'Glob', 'Edit', 'Write', 'Skill', 'Bash(python *)', 'Bash(git *)',
                 'Bash(ls *)', 'Bash(cat *)']
@@ -116,6 +118,8 @@ def run_error(record):
     hit = HARNESS_FAILURE.search(text)
     if hit:
         return hit[0]
+    if record.get('condition') == 'without' and record.get('skill_loaded'):
+        return 'baseline read the skill under test'
     if record.get('exit') not in (0, None) and not record.get('answer'):
         return f"exit {record.get('exit')} with no answer"
     return ''

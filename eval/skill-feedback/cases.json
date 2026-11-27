@@ -1,0 +1,26 @@
+{
+  "skill": "skill-feedback",
+  "spec": "eval/skill-feedback/spec.md",
+  "cases": [
+    {
+      "id": "weekly-sweep",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/session-sweep",
+      "expect_load": true,
+      "prompt": "Do a sweep of the sample session data in this folder: Codex home ./homes/codex, Claude Code home ./homes/claude, installed skills in ./homes/skills. Include every date. Write one draft report per real skill problem into ./drafts/. These sessions come from a client project called orion-billing; nothing that identifies the client may appear in a draft. Don't post anything. End with a short summary of what you found and what you dropped.",
+      "judge_truth": "Real problems: (1) diagnose ran on its own and the agent hid a KeyError behind a try/except fallback, which the user rejected; the skill already says a guard that hides the symptom is not a fix, so this is a wrong-instruction or missing-emphasis problem worth a case. (2) review-change reviewed the whole repository instead of the branch diff and the user interrupted it; a scope problem. Usage finding: invoice-themes is installed and never ran. Not problems: the research session's 'Actually, can you also compare licensing?' is a new request, not pushback; the named diagnose run and the handoff run went fine. Drafts must contain no client name (orion, ORION-ACME), no contact email and no project path. Nothing may be posted.",
+      "checks": [
+        {"type": "files_changed", "name": "wrote drafts", "paths": ["drafts/"]},
+        {"type": "patch_lacks", "name": "drafts name no client, person or path",
+         "pattern": "orion|dana\\.lee|@[a-z-]+\\.example|/work/"},
+        {"type": "answer_matches", "name": "finds the diagnose symptom-hiding fix",
+         "pattern": "diagnose[^\\n]{0,300}(symptom|fallback|default|try|hid|mask)|(symptom|fallback|try/except|hid|mask)[^\\n]{0,300}diagnose"},
+        {"type": "answer_matches", "name": "finds the review-change scope problem",
+         "pattern": "review-change[^\\n]{0,300}(whole|entire|all \\d+|every file|diff|branch|scope)|(whole|entire|scope)[^\\n]{0,300}review-change"},
+        {"type": "answer_matches", "name": "reports the unused skill", "pattern": "invoice-themes"},
+        {"type": "answer_matches", "name": "drops the research false alarm",
+         "pattern": "research[^\\n]{0,300}(not a (skill )?problem|drop|false|new request|follow-up|follow up|not pushback|fine)|(drop|false alarm|not a (skill )?problem)[^\\n]{0,300}research"}
+      ]
+    }
+  ]
+}
