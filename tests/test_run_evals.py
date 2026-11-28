@@ -116,6 +116,30 @@ class BlockedTest(unittest.TestCase):
         self.assertIn('wins or ties 1/1', text)
 
 
+class JudgeTieTest(unittest.TestCase):
+    def test_explicit_tie_is_a_tie_not_an_error(self):
+        results = []
+        with tempfile.TemporaryDirectory() as d:
+            for name, condition in (('a.jsonl', 'named'), ('b.jsonl', 'named')):
+                row = {'skill': 'diagnose', 'variant': name[0], 'case': 'zero-backoff-diagnose', 'repeat': 0,
+                       'condition': condition, 'answer': 'x' * 500, 'exit': 0, 'checks': []}
+                (Path(d) / name).write_text(json.dumps(row) + '\n', encoding='utf-8')
+            args = type('Args', (), {'path': str(Path(d) / 'a.jsonl'), 'against': str(Path(d) / 'b.jsonl'),
+                                     'pair': ['named', 'named'], 'seed': 7, 'out': str(Path(d) / 'v.jsonl'),
+                                     'both_orders': True, 'model': 'opus', 'redo_errors': False})()
+            original = run_evals.ask_judge
+            run_evals.ask_judge = lambda *a, **k: {'winner': 'tie', 'reason': 'same'}
+            try:
+                from contextlib import redirect_stdout
+                from io import StringIO
+                with redirect_stdout(StringIO()):
+                    run_evals.judge(args)
+            finally:
+                run_evals.ask_judge = original
+            results = [json.loads(l) for l in (Path(d) / 'v.jsonl').read_text(encoding='utf-8').splitlines()]
+        self.assertEqual([r['winner'] for r in results], ['tie'])
+
+
 class JudgePromptTest(unittest.TestCase):
     def test_hidden_results_show_only_hidden_tests(self):
         case = {'checks': [{'type': 'hidden_test', 'name': 'behavior kept'},

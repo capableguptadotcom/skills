@@ -507,6 +507,15 @@ def judge(args):
         suffix = (f'.judge-{left_label}-vs-{right_label}' if by_variant else f'.judge-{left}-vs-{right}').replace(':', '-')
         out = Path(str(Path(args.path).resolve()).replace('.jsonl', suffix + '.jsonl'))
     WORK_ROOT.mkdir(parents=True, exist_ok=True)
+    # --redo-errors re-judges only the pairs an earlier run recorded as judge errors; every other verdict stays.
+    kept, redo = {}, set()
+    if args.redo_errors and out.exists():
+        for line in out.read_text(encoding='utf-8').splitlines():
+            if line:
+                previous = json.loads(line)
+                key = (previous['case'], previous['repeat'])
+                (redo.add(key) if previous['winner'] == 'error' else kept.__setitem__(key, previous))
+        out.write_text(''.join(json.dumps(v) + '\n' for v in kept.values()), encoding='utf-8')
     for row in rows:
         if row['condition'] != left:
             continue
@@ -515,15 +524,17 @@ def judge(args):
         case = cases.get(row['case'], {})
         if other is None or not case.get('judge_truth') or run_error(row) or run_error(other):
             continue
-        flip = rng.random() < 0.5
+        flip = rng.random() < 0.5  # drawn for every pair, so a redo shows each pair in its original order
+        if args.redo_errors and (row['case'], row['repeat']) not in redo:
+            continue
         orders = [(other, row) if flip else (row, other)]
         if args.both_orders:
             orders.append(orders[0][::-1])
         labels, reasons = [], []
         for first, second in orders:
             verdict = ask_judge(case, first, second, args.model, spec.get('rubric'))
-            names = {'A': side_label(first, by_variant), 'B': side_label(second, by_variant)}
-            labels.append(names.get(verdict.get('winner'), 'error'))
+            names = {'A': side_label(first, by_variant), 'B': side_label(second, by_variant), 'TIE': 'tie'}
+            labels.append(names.get(str(verdict.get('winner', '')).strip().upper(), 'error'))
             reasons.append(verdict.get('reason', ''))
         # With both orders, a win counts only when both verdicts agree; otherwise it is a tie.
         label = 'error' if 'error' in labels else labels[0] if len(set(labels)) == 1 else 'tie'
@@ -597,6 +608,8 @@ def main():
     p_judge.add_argument('--seed', type=int, default=7)
     p_judge.add_argument('--against', help='take the right-hand condition from this results file (another skill)')
     p_judge.add_argument('--out', help='write verdicts here instead of beside the results file')
+    p_judge.add_argument('--redo-errors', action='store_true',
+                         help='re-judge only the pairs the verdict file records as judge errors')
     p_judge.add_argument('--both-orders', action='store_true',
                          help='judge each pair in both orders; count a win only when the verdicts agree')
     for p in (p_probe, p_run):
