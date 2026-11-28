@@ -159,6 +159,21 @@ The personal skills live outside this repository, in `~/.agents/skills` and `~/.
 
 The edited `diagnose` beats no skill on the suite rubric: named 18-0-0 (interval 82-100%), host decides 15-2-1 (74-99%). On the outcome-only rubric it does not: named 3-2-13, host decides 4-5-9. No skill found the right cause and fix in every `diagnose` and `review-change` fixture. There, the pack's measured gain is evidence and reporting, and the outcome rubric counts those sections as padding. Its one gain in outcome was the regression test on the invoice fix. Only `simplify-code` gained in the work itself. Next steps: harder fixtures that no skill fails, and a test of shorter reports for simple bugs.
 
+**Shorter reports, adopted.** The hypothesis: `diagnose` and `review-change` lose the outcome-only judging because their templates have the same sections for a one-line bug as for a hard one. Each skill's report step now says to scale the report. For `diagnose`, that means a line per section and no table when one cause was plausible. For `review-change`, a short list instead of the table when there are one or two findings. Both variants were run by name on the same cases and judged against the same no-skill and rival runs.
+
+| By name | Before | Shorter reports |
+| --- | --- | --- |
+| `review-change` vs no skill, suite rubric | 8-0-1 | 8-1-0 |
+| `review-change` vs no skill, outcome-only | 0-1-8 (1/9) | 1-3-5 (4/9) |
+| `review-change` answer length (no skill 1,524) | 2,051 | 1,654 |
+| `diagnose` vs no skill, suite rubric | 18-0-0 | 18-0-0 |
+| `diagnose` vs no skill, outcome-only | 3-2-13 (5/18) | 3-4-11 (7/18) |
+| `diagnose` vs `diagnosing-bugs` | 13-3-2 | 14-2-2 |
+| `diagnose` answer length (no skill 1,055) | 1,822 | 1,390 |
+| `diagnose` checks passed | 18/18 | 17/18 (one pinned-seed report missing) |
+
+**Why adopted.** Reports are 20 to 25% shorter, with no loss on the suite rubric or against the rival. Outcome-only moved the predicted way for both skills, but the gain is not significant (pooled 6/27 to 11/27). Neither skill clears 70% on outcome-only, so the conclusion above stands.
+
 **A first harder review fixture did not separate them.** The hypothesis: a large, mostly cosmetic diff hides a subtle change from an unaided review. The new case `noisy-tidy-boundary` sends "just type hints and tidying, no behavior change". The diff touches every module and hides two things. One is a real defect: the size check became exclusive at 100, and the README allows 100. The other is a decoy: a removed `.strip()` that `float()` makes harmless. No skill found the defect in 3 of 3 runs and correctly dismissed the decoy, and so did `review-change`. The hypothesis is rejected for a diff this size. The case stays as a regression check. Separating them on substance probably needs a larger codebase than these fixtures.
 
 ## 8. Publishing

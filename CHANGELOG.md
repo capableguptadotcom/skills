@@ -34,6 +34,8 @@ Restructure toward v1. Not yet evaluated against a no-skill baseline; no release
   - `diagnose` now pins what varies in an intermittent failure and watches the failing check fail first. Against `diagnosing-bugs`, by name, it went from 11-2-5 to 13-3-2.
   - `shape-change` no longer restates the plan mid-interview. Against `grill-me` in conversations it went from 3-0-6 to 4-1-4.
   - All three new suites beat no skill on their suite rubric. On an outcome-only rubric, `review-change` and `diagnose` do not: no skill already solves those fixtures.
+  - `diagnose`'s description now covers "find out why" questions that ask for no changes. On that case it loaded in 18 of 20 runs, against 10 of 20 before.
+  - `diagnose` and `review-change` scale their reports to the problem: about 20 to 25% shorter, with no loss on the suite rubric.
   - `simplify-code` matches Claude Code's `/simplify` on code. `review-change` beats `/code-review` on outcomes.
   - The harness gains no-skill baselines, `--builtin`, conversations with a simulated user, `--outcome-only` and intervals.
   - Codex covered only the review suite before its usage limit.
