@@ -1,6 +1,6 @@
 ---
 name: diagnose
-description: Use first for any bug - an error, a failing or flaky test, a wrong result, a crash or a slowdown - including when the user already names a suspected cause. Reproduces before fixing, tests competing causes, and fixes the code that owns the defect without hiding the symptom.
+description: Use first for any bug - an error, a failing or flaky test, a wrong result, a crash, a slowdown, or a question of why something does not work - including when the user already names a suspected cause or asks for no changes. Reproduces before fixing, tests competing causes, and fixes the code that owns the defect without hiding the symptom.
 ---
 
 # Diagnose from evidence

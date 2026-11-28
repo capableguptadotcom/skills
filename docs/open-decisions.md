@@ -42,7 +42,15 @@ All the host-decides losses that remain come from selection. When both skills lo
 
 **Why.** The edit removes a measured weakness, and the neighboring request stays unchanged. Host-decides is still 72% with an interval down to 49%, so "clears 70%" is not established there. The remaining gap is a selection miss on one prompt shape, not the skill's procedure.
 
-**Follow-up.** Find out why "find out why … don't change any files" does not select `diagnose` one time in three, and fix the description against a selection case.
+**Selection follow-up, done.** With the current description, `zero-backoff-diagnose` ("Find out why. Don't change any files.") loaded `diagnose` in 10 of 20 runs. A description that adds "a question of why something does not work" and "asks for no changes" loaded it in 18 of 20.
+
+| | Current description | New description |
+| --- | --- | --- |
+| `zero-backoff-diagnose` loads `diagnose` | 10/20 (30-70%) | 18/20 (70-97%) |
+| Docstring near miss loads `diagnose` | 0/3 | 0/5 |
+| `shape-change` design prompts also load `diagnose` | 6/10 | 7/10 |
+
+The difference on the target case is significant (Fisher exact, two-sided p = 0.014). The neighbors are unchanged: on the near miss, and on the two `shape-change` design prompts with both skills installed (p = 1.0). There, `shape-change` loaded in every run and every check passed. The new description is adopted. `diagnose` also loading alongside `shape-change` on design questions about duplicate emails happens with either description; it is noted here, not fixed.
 
 ## 2. No-skill baselines for `review-change`, `simplify-code` and `shape-change` (rule 2)
 
