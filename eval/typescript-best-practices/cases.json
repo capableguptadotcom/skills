@@ -1,0 +1,58 @@
+{
+  "skill": "typescript-best-practices",
+  "spec": "eval/typescript-best-practices/spec.md",
+  "candidate": "Upstream pstack skill, evaluated from a copy outside this repository. Not part of the pack.",
+  "outcome_rubric": [
+    "Behavior: the code does what the task asks; the hidden behavior tests are the objective record.",
+    "Types: the resulting types and boundaries make the bad state or input impossible or rejected where it enters, in proportion to the change; no cast that hides unchecked data; every caller of a changed type still works.",
+    "Scope: changes what the task needs and nothing unrelated.",
+    "Judge only the resulting code and whether it is right. Do not reward explanations, tables or stated checks for their own sake."
+  ],
+  "rubric": [
+    "Behavior: the code does what the task asks; the hidden behavior tests are the objective record.",
+    "Types: the resulting types and boundaries make the bad state or input impossible or rejected where it enters, in proportion to the change; no cast that hides unchecked data; every caller of a changed type still works.",
+    "Scope: changes what the task needs and nothing unrelated.",
+    "Evidence and honesty: says what was run and what was not checked (the agent cannot run a type checker here).",
+    "Concision: no padding. Length alone is not a virtue."
+  ],
+  "cases": [
+    {
+      "id": "orders-retry-state",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/ts-orders",
+      "expect_load": true,
+      "prompt": "Add retrying to the orders loader in src/orderState.ts. After a failed fetch the page retries, up to 3 attempts in total, and while it retries the status line reads exactly `Retrying (attempt N of 3)…`. Use a `{ type: \"retry\", attempt: number }` event. Keep OrdersPanel working.",
+      "judge_truth": "OrdersState is a bag of optional fields (`loading`, `orders?`, `error?`), and `failed` sets `error` that no later event clears, so a fetch that succeeds after a failure (a retry or a manual reload) still shows \"Couldn't load orders\". Adding retry on top of the bag makes that bug reachable on every successful retry. A good change models the states so a stale error cannot survive a successful load (a discriminated union such as idle/loading/retrying/loaded/failed is the natural fit; clearing the error explicitly in every transition also works but leaves contradictory states representable), handles every event, renders `Retrying (attempt N of 3)…` with the real ellipsis character, keeps the existing texts ('Loading orders…', 'No orders yet', 'N orders', \"Couldn't load orders: <message>\"), and updates OrdersPanel.tsx if the state shape changes (it reads `state.loading` and `state.orders`). Nothing else needs to change. The agent may run the tests with node; there is no type checker installed.",
+      "checks": [
+        {"type": "files_changed", "name": "edits the state module", "paths": ["src/orderState.ts"]},
+        {"type": "hidden_test", "name": "hidden behavior tests", "files": ["test_hidden_orders.py", "hidden_orders.test.ts"], "modules": ["test_hidden_orders"]}
+      ]
+    },
+    {
+      "id": "webhook-boundary",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/ts-webhook",
+      "expect_load": true,
+      "prompt": "The payment webhook in src/webhook.ts let a bad payload corrupt the ledger total (see INCIDENT.md). Fix it so this can't happen again.",
+      "judge_truth": "handleWebhook casts `JSON.parse(rawBody) as {...}`, so nothing checks the payload: a string amount_cents is concatenated into the total, malformed JSON throws (the provider then retries for 24 hours), and missing data throws. The fix parses the unknown JSON at the boundary into a checked Payment: amount_cents a non-negative integer, currency three uppercase letters and data.id a string, per docs/provider.md, and replies 400 to a payload it will never accept (the contract says 400 stops retries) without recording anything. Malformed JSON and non-object JSON also get 400, not an exception. Event types it does not handle still get 200 'ignored' (the contract says more types may be added). There is no schema library in the repository, so a small hand-written parser or type guard that really checks each field is right; installing a dependency is not needed. Adding a test for the incident payload is good. The ledger can stay as it is.",
+      "checks": [
+        {"type": "files_changed", "name": "edits the webhook", "paths": ["src/webhook.ts"]},
+        {"type": "hidden_test", "name": "hidden behavior tests", "files": ["test_hidden_webhook.py", "hidden_webhook.test.ts"], "modules": ["test_hidden_webhook"]}
+      ]
+    },
+    {
+      "id": "pagination-small-fix",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/ts-pagination",
+      "expect_load": true,
+      "prompt": "pageCount in src/pagination.ts returns 2 for 21 items at 10 per page. It should be 3. Fix it.",
+      "judge_truth": "A one-line fix: Math.ceil instead of Math.floor, which also keeps 20 -> 2 and 0 -> 0. Adding a test for the partial page is good. The task does not ask for new types: branding page sizes, a NonEmpty type, or rewriting pageSlice are out of scope, and src/legacy.ts (an `any`-typed adapter kept on purpose for another team) must not be touched. Validating pageSize > 0 is optional and should be mentioned rather than imposed.",
+      "checks": [
+        {"type": "files_changed", "name": "edits pagination", "paths": ["src/pagination.ts"]},
+        {"type": "paths_unchanged", "name": "leaves the legacy adapter alone", "paths": ["src/legacy.ts"]},
+        {"type": "patch_lacks", "name": "adds no brands or tuple types", "pattern": "__brand|NonEmpty|\\[T, \\.\\.\\.T\\[\\]\\]"},
+        {"type": "hidden_test", "name": "hidden behavior tests", "files": ["test_hidden_pagination.py", "hidden_pagination.test.ts"], "modules": ["test_hidden_pagination"]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "skill": "blast-radius",
+  "spec": "eval/blast-radius/spec.md",
+  "candidate": "Upstream pstack skill, evaluated from a copy outside this repository. The pack's owner of the job is review-change.",
+  "outcome_rubric": [
+    "Real breakage: names the breakage the ground truth describes, each with how it is reached, what goes wrong and where; does not present non-defects or speculation as breakage. On a safe change, saying it is safe and why is the right answer.",
+    "Scope: assesses the change asked about and edits nothing in the project.",
+    "Concision: no padding. Length alone is not a virtue.",
+    "Judge only what was found and whether it is right. Do not reward showing evidence, running scripts or stating coverage for their own sake."
+  ],
+  "rubric": [
+    "Real breakage: names the breakage the ground truth describes, each with how it is reached, what goes wrong and where; does not present non-defects or speculation as breakage. On a safe change, saying it is safe and why is the right answer.",
+    "Evidence: the claims the verdict rests on are backed by code read or something run against the real code, not asserted.",
+    "Scope: assesses the change asked about and edits nothing in the project.",
+    "Honesty: says what was not verified.",
+    "Concision: no padding. Length alone is not a virtue."
+  ],
+  "cases": [
+    {
+      "id": "epoch-breaks-report",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/ts-orders-service",
+      "change": {"path": "eval/fixtures/ts-orders-service-changes/epoch-timestamps", "branch": "feature",
+                 "message": "Send placedAt as epoch milliseconds (smaller payloads)"},
+      "expect_load": true,
+      "writable": false,
+      "prompt": "What could the change on this branch break? It's small and the tests pass, but I don't trust it. Don't edit anything.",
+      "judge_truth": "toWire now writes placedAt as a number (epoch ms). The unchanged Python job jobs/nightly_report.py calls row[\"placedAt\"].replace(...) and datetime.fromisoformat on every line of exports/orders.jsonl, so the first order exported after this change makes the finance report crash (AttributeError: 'int' object has no attribute 'replace'). The export file is appended to, so it will hold old ISO strings and new numbers at once; any fix in the job must handle both. GET /orders clients also receive a number instead of an ISO string (an API contract change; the in-repo TS consumer fromWire still works because new Date(number) is valid). data/orders.json holds ISO strings that fromWire still reads correctly, so the orders page is fine. The TS tests pass because they were updated and nothing runs the Python job. No files should change.",
+      "checks": [
+        {"type": "paths_unchanged", "name": "no edits to the project", "paths": ["src/", "jobs/", "test/", "data/", "exports/", "README.md", "package.json"]},
+        {"type": "answer_matches", "name": "finds the broken nightly report", "pattern": "nightly_report|nightly report|finance (job|report)"}
+      ]
+    },
+    {
+      "id": "rename-breaks-saved-data",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/ts-orders-service",
+      "change": {"path": "eval/fixtures/ts-orders-service-changes/status-spelling", "branch": "feature",
+                 "message": "Spell cancelled the British way, like the UI copy"},
+      "expect_load": true,
+      "writable": false,
+      "prompt": "What could the change on this branch break? It's small and the tests pass, but I don't trust it. Don't edit anything.",
+      "judge_truth": "The status literal changes from \"canceled\" to \"cancelled\" and the type checker is satisfied, but stored data still says \"canceled\": data/orders.json (order o-1002) is loaded by store.loadOrders, whose `as WireOrder[]` cast hides the mismatch, and statusLabel's exhaustive default throws `unknown status canceled`, so renderOrdersPage, the orders page, crashes for any customer with a canceled order. exports/orders.jsonl history and the unchanged Python job jobs/nightly_report.py still compare against \"canceled\", so new exports written as \"cancelled\" are silently left out of the canceled count (the report shows fewer cancellations, with no error). The tests pass because the label test was updated and nothing loads saved data. Fixes involve a data migration or accepting both spellings at the parse boundary, and updating the report. No files should change.",
+      "checks": [
+        {"type": "paths_unchanged", "name": "no edits to the project", "paths": ["src/", "jobs/", "test/", "data/", "exports/", "README.md", "package.json"]},
+        {"type": "answer_matches", "name": "finds the saved records", "pattern": "data/orders\\.json|o-1002|saved (orders|records|data)|persisted|stored (orders|records|data)|existing (orders|records|data)"}
+      ]
+    },
+    {
+      "id": "safe-eviction",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/ts-orders-service",
+      "change": {"path": "eval/fixtures/ts-orders-service-changes/evict-on-read", "branch": "feature",
+                 "message": "Evict expired prices on read instead of on a timer"},
+      "expect_load": true,
+      "writable": false,
+      "prompt": "What could the change on this branch break? It's small and the tests pass, but I don't trust it. Don't edit anything.",
+      "judge_truth": "The change is safe. It is safe because of one fact: evictExpired deletes only entries with expiresAt <= now, and get() already returns undefined for exactly those entries, so evicting them first never changes what get() returns (and the deletion happens synchronously before the lookup, so there is no interleaving with priceFor's await). Removing the 30-second timer means expired entries for SKUs nobody reads again stay in memory until some get() runs; with a few hundred SKUs that is negligible, but it is a real, minor difference worth one line. get() is now O(n) over the map, also negligible at this size. cachedPriceCount() can now report fewer entries than before (expired ones vanish on the next read rather than within 30 s): a metrics nuance, not a bug. Iterating a Map while deleting the current entry is well defined in JavaScript. A good answer says the change is safe, states the fact, and does not invent a blocking defect. No files should change.",
+      "checks": [
+        {"type": "paths_unchanged", "name": "no edits to the project", "paths": ["src/", "jobs/", "test/", "data/", "exports/", "README.md", "package.json"]}
+      ]
+    }
+  ]
+}

@@ -42,8 +42,14 @@ SKILL_DIR = {'claude': '.claude/skills', 'codex': '.agents/skills'}
 # PYTHONHASHSEED=... python is how agents pin hash order when chasing a flaky test; without it, skills that
 # reproduce such failures were held back more than skills that only reason about them. Shell loops over
 # variables stay refused: Claude Code cannot check them before they run, whatever the allowlist says.
+# node and npm test run the TypeScript fixtures' tests (Node's type stripping); npm cannot install anything.
+# head, tail and grep let a test's output be piped; a pipe is refused unless every command in it is allowed.
 CLAUDE_TOOLS = ['Read', 'Grep', 'Glob', 'Edit', 'Write', 'Skill', 'Agent', 'Task', 'Bash(python *)',
-                'Bash(PYTHONHASHSEED=* python *)', 'Bash(git *)', 'Bash(ls *)', 'Bash(cat *)']
+                'Bash(PYTHONHASHSEED=* python *)', 'Bash(node *)', 'Bash(npm test)', 'Bash(npm test *)',
+                'Bash(git *)', 'Bash(ls *)', 'Bash(cat *)', 'Bash(head *)', 'Bash(tail *)', 'Bash(grep *)']
+# On Windows, Claude Code also offers a PowerShell tool that the allowlist never permits; removing it makes the
+# agent use Bash, where the allowlist applies, instead of losing turns to refused PowerShell commands.
+CLAUDE_DISALLOWED = ['PowerShell']
 
 
 def codex_binary():
@@ -82,7 +88,8 @@ def command(host, prompt, workdir, model=None, writable=True, session=None):
                        else ['--no-session-persistence'])
         args = ['claude', '-p', prompt, '--output-format', 'stream-json', '--verbose',
                 '--setting-sources', 'project', *persistence,
-                '--permission-mode', 'acceptEdits', '--allowedTools', *CLAUDE_TOOLS]
+                '--permission-mode', 'acceptEdits', '--allowedTools', *CLAUDE_TOOLS,
+                '--disallowedTools', *CLAUDE_DISALLOWED]
         return args + (['--model', model] if model else [])
     args = [codex_binary(), 'exec', '--json', '--skip-git-repo-check',
             '-s', 'workspace-write' if writable else 'read-only',
@@ -280,7 +287,10 @@ def redact(text):
     if not isinstance(text, str):
         return text
     for value, label in ((str(WORK_ROOT), '<eval-runs>'), (str(ROOT), '<repo>'), (str(HOME), '<home>')):
-        for form in {value, value.replace('\\', '/'), value.replace('\\', '\\\\')}:
+        forms = {value, value.replace('\\', '/'), value.replace('\\', '\\\\')}
+        if re.match(r'[A-Za-z]:\\', value):  # Git Bash spells C:\Users\x as /c/Users/x
+            forms.add('/' + value[0].lower() + value[2:].replace('\\', '/'))
+        for form in sorted(forms, key=len, reverse=True):
             text = re.sub(re.escape(form), label, text, flags=re.I)
     return text
 
@@ -463,6 +473,7 @@ def run(args):
                 record = {'skill': args.skill, 'variant': variant, 'peers': [Path(p).name for p in args.peer or []],
                           'host': args.host, 'model': args.model, 'case': case['id'],
                           'allowlist': CLAUDE_TOOLS if args.host == 'claude' else None,
+                          'disallowed': CLAUDE_DISALLOWED if args.host == 'claude' else None,
                           'condition': condition, 'repeat': repeat, 'exit': proc.returncode,
                           'seconds': round(time.time() - started, 1), 'expect_load': case.get('expect_load'),
                           'passed': all(c['passed'] for c in checks), 'checks': checks,
