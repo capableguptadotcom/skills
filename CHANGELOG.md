@@ -13,6 +13,7 @@ Each release records what changed and the evaluation summary that justified it.
     | `blast-radius` | 9/9 (70–100%) / 5/9 (27–81%) | vs `review-change`: 9/9 (70–100%) / 7/9 (45–94%) |
     | `unslop` | 8/9 (56–98%) / 6/9 (35–88%) | no owner |
 
+  - A statechart prototype on everystate was requested but stopped at its first step (checking everystate against upstream's recorded TLC output): permission to download and run the package was not given. Nothing was built.
   - None clears `CONTRIBUTING.md`: `develop` and `review-change` already cover the first two, and `blast-radius` and `unslop` gain only in the report. As published, `typescript-best-practices` never loads in Claude Code: its `paths:` glob hides it in all 18 runs.
   - New eval suites with synthetic fixtures: `eval/typescript-best-practices` (TypeScript state, webhook boundary, one-line near miss; hidden tests on Node's type stripping), `eval/blast-radius` (a TypeScript service whose changes break a Python job and saved data, plus a safe change), `eval/unslop` (PR description, release notes with literals, typo-only near miss).
 - Eval harness (Claude Code):
