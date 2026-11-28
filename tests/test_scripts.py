@@ -14,6 +14,7 @@ HANDOFF_STATE = ROOT / 'skills/handoff/scripts/handoff_state.py'
 SESSION_INFO = ROOT / 'skills/skill-feedback/scripts/session_info.py'
 SANITIZE = ROOT / 'skills/skill-feedback/scripts/sanitize_check.py'
 SWEEP = ROOT / 'skills/skill-feedback/scripts/sweep_sessions.py'
+TRACE_CHART = ROOT / 'drafts/statechart-everystate/scripts/trace_chart.py'
 
 
 def run(script, *args, cwd=None, isolated=True):
@@ -272,6 +273,62 @@ class RescoreTests(unittest.TestCase):
             self.assertEqual(rows[1]['error'], 'usage limit')
             self.assertIn('Left out as invalid: 1 x usage limit', result.stdout)
             self.assertIn('1/1', result.stdout)
+
+
+class TraceChartTests(unittest.TestCase):
+    """The draft statechart renderer, on everystate -json results shaped like the ones it prints."""
+
+    def write(self, name, data):
+        path = Path(self.tmp.name) / name
+        path.write_text(data if isinstance(data, str) else json.dumps(data), encoding='utf-8')
+        return path
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.result = self.write('result.json', {
+            'status': 'invariant', 'name': 'ChargedOnce', 'generated': 9, 'distinct': 7, 'trace': [
+                {'action': None, 'state': {'charges': '0', 'phase': '"pending"'}},
+                {'action': 'ReadA', 'state': {'charges': '0', 'phase': '"pending"'}},
+                {'action': 'ChargeA', 'state': {'charges': '1', 'phase': '"pending"'}},
+                {'action': 'ChargeB', 'state': {'charges': '2', 'phase': '"pending"'}}]})
+        self.labels = self.write('labels.json', {
+            'states': [{'when': {'charges': '2'}, 'label': 'Charged twice'}], 'show': ['charges'],
+            'actions': {'ChargeA': 'request A charges the card', 'ChargeB': 'request B charges the card'},
+            'rules': {'ChargedOnce': 'an order is charged at most once'}})
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_bug_path_in_the_readers_words(self):
+        out = run(TRACE_CHART, self.result, '--labels', self.labels)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertIn('stateDiagram-v2', out.stdout)
+        self.assertIn('state "Charged twice" as s2', out.stdout)
+        self.assertIn('class s2 breaks', out.stdout)
+        self.assertIn('ChargedOnce breaks (an order is charged at most once).', out.stdout)
+        self.assertIn('3. request B charges the card: Charged twice', out.stdout)
+
+    def test_whole_graph_from_a_dot_dump_and_a_pass(self):
+        # The file as everystate writes it: backslashes, a literal \n between conjuncts, escaped quotes.
+        dot = self.write('graph.dot', '\n'.join([
+            'strict digraph DiskGraph {',
+            r'1 [label="/\\ charges = 0\n/\\ phase = \"pending\"",style = filled]',
+            '1 -> 2 [label="ChargeA",color="black",fontcolor="black"];',
+            r'2 [label="/\\ charges = 1\n/\\ phase = \"paid\""];',
+            '}', '']))
+        passed = self.write('ok.json', {'status': 'ok', 'generated': 3, 'distinct': 2, 'trace': []})
+        out = run(TRACE_CHART, passed, '--labels', self.labels, '--dot', dot)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertIn('s0 --> s1: request A charges the card', out.stdout)
+        self.assertIn('No rule breaks', out.stdout)
+
+    def test_liveness_loop_and_missing_result(self):
+        loop = self.write('loop.json', {'status': 'liveness', 'name': 'Done', 'loopTo': 0, 'trace': [
+            {'action': None, 'state': {'x': '0'}}, {'action': 'Up', 'state': {'x': '1'}}]})
+        out = run(TRACE_CHART, loop)
+        self.assertIn('and again, forever', out.stdout)
+        self.assertIn('Then it goes back to step 0 and repeats forever.', out.stdout)
+        self.assertNotEqual(run(TRACE_CHART, self.write('empty.json', 'no json here')).returncode, 0)
 
 
 class AuditTests(unittest.TestCase):

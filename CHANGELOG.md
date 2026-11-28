@@ -13,7 +13,11 @@ Each release records what changed and the evaluation summary that justified it.
     | `blast-radius` | 9/9 (70–100%) / 5/9 (27–81%) | vs `review-change`: 9/9 (70–100%) / 7/9 (45–94%) |
     | `unslop` | 8/9 (56–98%) / 6/9 (35–88%) | no owner |
 
-  - A statechart prototype on everystate was requested but stopped at its first step (checking everystate against upstream's recorded TLC output): permission to download and run the package was not given. Nothing was built.
+  - New draft [drafts/statechart-everystate](drafts/statechart-everystate/): `statechart` without Java, TLC or a TypeScript runtime.
+    - Instructions in `SKILL.draft.md` (not installable).
+    - `trace_chart.py` (read-only Python) turns everystate's `-json` trace, and optionally its state graph, into a Mermaid chart and a numbered bug path. Tested in `tests/test_scripts.py`.
+    - everystate 0.4.1 matched TLC 2.19 on all 33 of upstream statechart's recorded cases (exit code, rule and shortest trace; state counts where TLC printed them; state graphs).
+    - Evaluated on four TypeScript flows (`eval/statechart-everystate`). Against no skill it won 12/12 on the suite rubric but only 3/12 outcome-only. The same procedure without the chart did no worse (chart vs no chart: 5/12 suite, 8/12 outcome-only). It stays a draft.
   - None clears `CONTRIBUTING.md`: `develop` and `review-change` already cover the first two, and `blast-radius` and `unslop` gain only in the report. As published, `typescript-best-practices` never loads in Claude Code: its `paths:` glob hides it in all 18 runs.
   - New eval suites with synthetic fixtures: `eval/typescript-best-practices` (TypeScript state, webhook boundary, one-line near miss; hidden tests on Node's type stripping), `eval/blast-radius` (a TypeScript service whose changes break a Python job and saved data, plus a safe change), `eval/unslop` (PR description, release notes with literals, typo-only near miss).
 - Eval harness (Claude Code):
@@ -21,6 +25,8 @@ Each release records what changed and the evaluation summary that justified it.
   - The allowlist adds `node`, `npm test`, `head`, `tail` and `grep`.
   - Redaction also catches Git Bash paths (`/c/Users/<name>`).
   - Runs record the disallowed tools.
+  - The allowlist adds `npx everystate@0.4.1`, pinned.
+  - Output is written as UTF-8, so a judge reason with an arrow no longer stops a judge run on Windows.
 
 - `skill-feedback` sets `metadata.internal: true`. The skills CLI leaves it out unless `INSTALL_INTERNAL_SKILLS=1`, so the team install is now `npx skills add capableguptadotcom/skills --copy --agent claude-code codex -y`, with no skill list. A test checks that only `skill-feedback` is internal.
 - New [docs/writing-skills.md](docs/writing-skills.md): how to write and evaluate a skill, with a checklist and the candidates considered so far (`grill-me`, `grill-with-docs`, formal verification, `statechart`) and where each stands. The README gains usage examples.

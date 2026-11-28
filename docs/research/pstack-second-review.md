@@ -1,13 +1,13 @@
 # Pstack, second review: what changed, what is used, what to adopt
 
-28 November 2026. This follows the [first review](../pstack-first-review.md) (pinned at [`4dd1d05`](https://github.com/cursor/plugins/tree/4dd1d05818d19792e7cd6e818f1667f95f7e1dbe/pstack), 0.15.36) and does not repeat it. New pin: [`b7b93c3`](https://github.com/cursor/plugins/tree/b7b93c36be9bcc36a74db438e0fd385d660bc559/pstack), 0.15.48, 26 November 2026. No upstream installer, helper or test was run. Third-party skill files were copied only into eval workspaces outside this repository.
+28 November 2026. This follows the [first review](../pstack-first-review.md) (pinned at [`4dd1d05`](https://github.com/cursor/plugins/tree/4dd1d05818d19792e7cd6e818f1667f95f7e1dbe/pstack), 0.15.36) and does not repeat it. New pin: [`b7b93c3`](https://github.com/cursor/plugins/tree/b7b93c36be9bcc36a74db438e0fd385d660bc559/pstack), 0.15.48, 26 November 2026. No upstream installer, helper or test was run. Third-party skill files were copied only into eval workspaces outside this repository. The one third-party program run was everystate 0.4.1, with the user's permission (section 5).
 
 **Short answer.** pstack is widely installed and actively maintained, but nobody has published a measured effect on outcomes, its authors included. Its three most-installed skills were evaluated here against no skill and against the pack skill that owns the job. None clears the bar in `CONTRIBUTING.md`, so none is added:
 
 - `typescript-best-practices` beats no skill, including on outcomes, but not `develop`, which already owns the job. As published it does not run in Claude Code at all.
 - `blast-radius` and `unslop` win on the suite rubric but not on outcomes. Their gain is in the report, not the work.
 
-Two ideas are worth testing inside the pack skills that own them: modeling variant state as a discriminated union (in `develop`), and naming the one fact a verdict rests on (in `review-change`). `statechart` can be adapted without its TypeScript runtime and Java, and the verification draft has a concrete list of what it needs to ship.
+Two ideas are worth testing inside the pack skills that own them: modeling variant state as a discriminated union (in `develop`), and naming the one fact a verdict rests on (in `review-change`). `statechart` can do without its TypeScript runtime and Java. everystate matched TLC on all 33 of upstream's recorded cases, and a Python-only draft now exists. On four TypeScript flows, though, neither model checking nor its chart beat no skill on outcomes, so the draft stays a draft. Section 5 also lists what the verification draft needs to ship.
 
 ## 1. What changed since the first pin
 
@@ -89,7 +89,7 @@ Common criticisms across the write-ups: overkill for small changes, high token c
 | setup-pstack | Routing ladder | Not worth it | Cursor model configuration. |
 | sharpen | Last line | Not worth it | Prompt rewriting; optional and outside daily development. |
 | show-me-your-work | Model line | Covered | `handoff` and `develop` keep a compact decision trail. |
-| statechart | Windows, SANY, borders | Not adopted; adaptable | Still a 3,980-line TypeScript compiler with a Java/TLC installer. A Python-only adaptation is possible (section 5). |
+| statechart | Windows, SANY, borders | Not adopted; drafted | Still a 3,980-line TypeScript compiler with a Java/TLC installer. A Python-only version on everystate is in `drafts/statechart-everystate`; evaluated, it does not beat no skill on outcomes (section 5). |
 | swarm | Model line | Covered | Host subagents and workflows. |
 | tdd | No | Covered | `develop` ([testing reference](../../skills/develop/references/testing.md)) and `diagnose`. |
 | teach | Points at new `why` | Covered | `research`. |
@@ -167,16 +167,47 @@ Yes, for most of what a reader uses, by splitting the work differently. What `st
 A portable adaptation:
 
 1. **Checker: everystate instead of TLC.** [everystate](https://github.com/mattzcarey/everystate) is a Rust TLA+ checker with TLC's command line, output and exit codes (0 pass, 11 deadlock, 12 invariant, 13 liveness, 150/151 parse errors), `-json` (status, counts and the shortest `{action, state}` trace on the last line) and `-dump dot,actionlabels`. No Java. The agent runs it, pinned: `npx --yes everystate@0.4.1 -json Spec.tla`. The skill's own scripts never touch the network or start processes, so there is no process-group handling to port.
-2. **Renderer: one read-only Python script.** `trace_to_mermaid.py` reads the `-json` result and, when present, the DOT dump, and writes a Mermaid `stateDiagram-v2`: the shortest bad path for a violation, or the whole graph under a state budget. Reader labels come from a declarative JSON map (variable values to label, action to step label), not executable view modules, so no code from the model author runs.
+2. **Renderer: one read-only Python script.** [`trace_chart.py`](../../drafts/statechart-everystate/scripts/trace_chart.py) reads the `-json` result and, when present, the DOT dump, and prints a Mermaid `stateDiagram-v2` and a numbered bug path: the shortest bad path for a violation, or the whole graph under a state budget with the path marked. Reader labels come from a declarative JSON map (variable values to label, action to step sentence, rule to promise), not executable view modules, so no code from the model author runs.
 3. **Re-runs for every rule** stay with the agent: the skill tells it to remove a broken invariant from a copy of the `.cfg` and run again, and to list rules it did not check.
 
 What is lost against upstream: parent states and parallel regions, `mayBreak` marks for merged states, the automatic per-rule re-run loop, Pele rendering, and 33 corpus regressions and differential tests against TLC. A first version should cover flat charts and bug paths only.
 
-What is unknown. everystate is 16 days old (created 12 November 2026, v0.4.1, one maintainer, 267 stars). Its [conformance notes](https://github.com/mattzcarey/everystate/blob/main/CONFORMANCE.md) claim 122/122 matches on the tlaplus Examples, 383/414 on TLC's own test models, and that pstack's unmodified statechart corpus gives byte-identical output (33/33) with everystate standing in for Java. Those are the author's claims; none was reproduced here, because doing so means installing the package. `npx` also downloads a native binary at use time, so a project should pin the version.
+**Does everystate stand in for TLC? Checked.** everystate is 16 days old (created 12 November 2026, v0.4.1, one maintainer, 267 stars). Its [conformance notes](https://github.com/mattzcarey/everystate/blob/main/CONFORMANCE.md) claim 122/122 matches on the tlaplus Examples and 383/414 on TLC's own test models; those two were not rerun. The statechart corpus was. `everystate@0.4.1` was downloaded with `npm pack` (registry integrity hash matched, 7.4 MB tarball, no dependencies, no install scripts). Its launcher only starts the bundled binary for the platform. The 3 MB Windows binary itself is compiled and was not audited. Each of the 33 corpus cases was copied to a scratch folder and run with `-json -workers 1`, the flags statechart pins, then compared with the TLC 2.19 output the corpus recorded for the same config (`verdict-1.out`):
 
-**Building it was requested later and stopped at step 1.** The plan was: run everystate on upstream statechart's recorded corpus (including the #741 broken variants and #982's `CounterInstance`) and compare verdict, state counts and shortest bad trace with the recorded TLC output; only if they matched, prototype `drafts/statechart-everystate/` (instructions plus a read-only Python JSON-to-Mermaid script) and evaluate it on double-submit, double-send retry and lease-race fixtures against no skill and against model checking without a diagram. Step 1 needs everystate downloaded and run (`everystate@0.4.1`: registry tarball, about 19.8 MB unpacked, MIT, no dependencies, no install scripts). Permission to download and run it was asked for on 28 November 2026 and not given, so nothing was downloaded, and no prototype or evaluation exists. The next attempt starts at step 1, with that permission.
+| Compared | Match |
+| --- | --- |
+| Exit code, broken rule (invariant, deadlock or temporal property) and the whole shortest bad trace, action by action and state by state | 33 of 33, including #982's `CounterInstance` and the broken and fixed pairs (`TwoPhase`, `MediaPlayer`, `Login`) |
+| Generated and distinct state counts | 31 of 31 where TLC printed them; in the other 2 the rule breaks in the initial state and TLC prints no counts |
+| Reachable state graph from `-dump dot,actionlabels` (rules removed, as statechart's chart run does), as labeled edges | 33 of 33. In `TypeGuard`, TLC's file repeats one edge because its chart run stopped on an evaluation error; the set of edges is the same |
+| `-workers 4` and `-workers auto` | Same verdict, counts and trace as one worker (`TwoPhase`, `DieHard`) |
+| PlusCal (`everystate pcal`) and `-simulate` | Both work on a small algorithm |
 
-Fit with this pack's rules: Python-only scripts, no network in scripts and nothing outside the skill folder all hold. The skill does need the network once, through the agent, to fetch the checker; say so in its description. It belongs as part of the by-name verification skill, not as a separate statechart entrypoint: a chart is one way to report a counterexample, and the first review already found that a counterexample can be explained without a renderer. The personal `formal-verification` skill does the checking half; it was not copied or evaluated here.
+One difference to handle: a failed `Assert` exits 255 with `"status": "error"` and still gives the trace. TLC was not run here, so its exit code for that case was not compared. The comparison scripts stayed in the session scratchpad; the corpus is upstream's.
+
+**Built and evaluated.** The prototype is [drafts/statechart-everystate](../../drafts/statechart-everystate/): instructions in `SKILL.draft.md` (not named `SKILL.md`, so nothing installs it) and `scripts/trace_chart.py`, with tests in `tests/test_scripts.py`. The evaluation ([eval/statechart-everystate](../../eval/statechart-everystate/)) ran four synthetic TypeScript flows: a double-submitted checkout, an invoice email resent by a retry, a lease race, and a near miss where an atomic claim and an idempotency key make a double charge impossible. Three conditions: no skill; [`model-check`](../../eval/statechart-everystate/model-check.SKILL.md), the same procedure with the chart step replaced by a written retelling; and the draft with the chart. Claude Code, Sonnet, 3 repeats, Opus judging both orders.
+
+| Comparison (4 cases, 12 pairs) | Suite rubric: W-T-L, wins or ties | Outcome only: W-T-L, wins or ties |
+| --- | --- | --- |
+| Chart draft named vs no skill | 12-0-0, 12/12 (76–100%) | 0-3-9, 3/12 (9–53%) |
+| `model-check` named vs no skill | 12-0-0, 12/12 (76–100%) | 1-1-10, 2/12 (5–45%) |
+| Chart draft vs `model-check` | 2-3-7, 5/12 (19–68%) | 4-4-4, 8/12 (39–86%) |
+
+| Condition | Checks passed | Cost per run | Seconds |
+| --- | --- | --- | --- |
+| No skill | 12/12 | $0.07 | 14 |
+| `model-check` | 12/12 | $0.18 | 51 |
+| Chart draft | 12/12 (a chart in 9 answers) | $0.20 | 54 |
+
+What this shows:
+
+- **On these fixtures, model checking improves the evidence, not the answer.** Every condition, no skill included, reached the right verdict and the right fix on all four cases, the safe near miss included. The suite-rubric wins come from a checked model, a deliberate break and stated bounds. On outcomes, no skill won most pairs because it said the same thing more directly. Part of that penalty is mine: the draft has the agent write its model into `.model/` in the project, and the judge read those files as edits after "Don't change the code". The fixtures are four small files each, where reading the code is enough; a case where reading alone goes wrong is still needed to show what the checker adds.
+- **The chart adds nothing measurable over a written retelling.** Against `model-check` it is 5/12 on the suite rubric and 8/12 (4-4-4) on outcomes. Judges preferred the shorter answer about as often as the one with a diagram.
+- **It costs about 3 times as much** as no skill ($0.18–0.20 against $0.07) and takes about 4 times as long.
+- **The first round of skill runs was redone.** The draft first said to model "in a scratch folder outside the repository". The eval environment refuses `cd` into such folders, and a real session would ask permission there too, so 2 of 12 `model-check` and 4 of 12 chart runs never got a checker result. Both instructions now use `.model/` and run from the project root, and those runs were repeated. In the repeat, shell redirects into `.model/` were still refused in about two runs of three; the agents worked around it by reading stdout, and every repeated run reports a checker result.
+
+**Decision: keep it as a draft.** everystate can stand in for TLC on everything statechart's corpus covers. The Python renderer works and is tested. But neither model checking nor the chart beat no skill on outcomes here, so neither clears `CONTRIBUTING.md`. If the verification skill is built, the checker part belongs there, and the chart should stay out until a case shows a reader deciding better with it.
+
+Fit with this pack's rules: Python-only scripts, no network in scripts and nothing outside the skill folder all hold. The skill does need the network once, through the agent, to fetch the checker, and says so in its description. The personal `formal-verification` skill does the checking half; it was not copied or evaluated here.
 
 ### What would a by-name verification skill built on `drafts/verification-skill/` need to ship?
 
@@ -195,4 +226,4 @@ Fit with this pack's rules: Python-only scripts, no network in scripts and nothi
 - **No Codex.** The pack's skills run in Codex too; these candidates were not measured there.
 - **Upstream skills ran as published, outside their system.** `typescript-best-practices` normally loads under `poteto-mode` with its principles; `blast-radius` suggests running `arena`, which was not installed. Results apply to the skill as a team would install it from skills.sh, not to pstack as a whole.
 - **No type checker.** The TypeScript fixtures run on Node's type stripping; type quality was judged, not compiled.
-- **Nothing in pstack was executed**, including `statechart` and everystate. Their test and conformance claims are reported, not reproduced.
+- **No pstack code was executed.** Upstream `statechart`'s own tests and its Windows claims were not run. everystate was run on upstream's recorded corpus, but its other conformance claims (tlaplus Examples, TLC's test models) were not, and its compiled binary was not audited.

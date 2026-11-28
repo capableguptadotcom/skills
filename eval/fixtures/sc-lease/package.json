@@ -1,0 +1,5 @@
+{
+  "name": "export-worker",
+  "private": true,
+  "type": "module"
+}

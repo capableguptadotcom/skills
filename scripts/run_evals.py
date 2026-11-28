@@ -46,7 +46,9 @@ SKILL_DIR = {'claude': '.claude/skills', 'codex': '.agents/skills'}
 # head, tail and grep let a test's output be piped; a pipe is refused unless every command in it is allowed.
 CLAUDE_TOOLS = ['Read', 'Grep', 'Glob', 'Edit', 'Write', 'Skill', 'Agent', 'Task', 'Bash(python *)',
                 'Bash(PYTHONHASHSEED=* python *)', 'Bash(node *)', 'Bash(npm test)', 'Bash(npm test *)',
-                'Bash(git *)', 'Bash(ls *)', 'Bash(cat *)', 'Bash(head *)', 'Bash(tail *)', 'Bash(grep *)']
+                'Bash(git *)', 'Bash(ls *)', 'Bash(cat *)', 'Bash(head *)', 'Bash(tail *)', 'Bash(grep *)',
+                # The model checker the statechart-everystate draft runs, pinned to the version checked against TLC.
+                'Bash(npx --yes everystate@0.4.1 *)', 'Bash(npx everystate@0.4.1 *)']
 # On Windows, Claude Code also offers a PowerShell tool that the allowlist never permits; removing it makes the
 # agent use Bash, where the allowlist applies, instead of losing turns to refused PowerShell commands.
 CLAUDE_DISALLOWED = ['PowerShell']
@@ -772,6 +774,10 @@ def probe(args):
 
 
 def main():
+    # On Windows, stdout redirected to a file uses the legacy code page, and a judge reason with an arrow in it
+    # would stop the run halfway through a verdict file.
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest='command', required=True)
     p_probe = sub.add_parser('probe')
