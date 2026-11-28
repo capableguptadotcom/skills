@@ -116,7 +116,10 @@ HARNESS_FAILURE = re.compile(r'usage limit|rate limit|denied (read |write )?acce
 
 def run_error(record):
     """Why a run is invalid, or '' when it is a real attempt."""
-    text = record.get('stderr', '') + '\n' + record.get('answer', '')
+    # A full answer that merely discusses rate limits (an SMS provider's, say) is not a harness failure.
+    answer = record.get('answer', '')
+    failed = record.get('exit') not in (0, None) or len(answer) < 400
+    text = (record.get('stderr') or '') + '\n' + (answer if failed else '')
     hit = HARNESS_FAILURE.search(text)
     if hit:
         return hit[0]

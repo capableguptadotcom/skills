@@ -75,6 +75,20 @@ class ChangeOverlayTest(unittest.TestCase):
         self.assertTrue(run_evals.check(case, Path('.'), '', 'simplify-code', '')[0]['passed'])
 
 
+class RunErrorTest(unittest.TestCase):
+    def test_answer_about_rate_limits_is_a_valid_run(self):
+        answer = 'Which SMS provider is it, and who owns the cost and rate limits? ' + 'Detail. ' * 60
+        self.assertEqual(run_evals.run_error({'exit': 0, 'answer': answer, 'condition': 'named'}), '')
+
+    def test_short_limit_message_is_invalid(self):
+        record = {'exit': 0, 'answer': "You've hit your usage limit.", 'condition': 'named'}
+        self.assertEqual(run_evals.run_error(record), 'usage limit')
+
+    def test_failed_run_with_limit_in_stderr_is_invalid(self):
+        record = {'exit': 1, 'answer': '', 'stderr': 'API Error: rate limit exceeded', 'condition': 'with'}
+        self.assertEqual(run_evals.run_error(record), 'rate limit')
+
+
 class JudgePromptTest(unittest.TestCase):
     def test_hidden_results_show_only_hidden_tests(self):
         case = {'checks': [{'type': 'hidden_test', 'name': 'behavior kept'},
