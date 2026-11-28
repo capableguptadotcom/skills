@@ -5,6 +5,7 @@ Each release records what changed and the evaluation summary that justified it.
 ## Unreleased
 
 - `skill-feedback` sets `metadata.internal: true`. The skills CLI leaves it out unless `INSTALL_INTERNAL_SKILLS=1`, so the team install is now `npx skills add capableguptadotcom/skills --copy --agent claude-code codex -y`, with no skill list. A test checks that only `skill-feedback` is internal.
+- New [docs/writing-skills.md](docs/writing-skills.md): how to write and evaluate a skill, with a checklist and the candidates considered so far (`grill-me`, `grill-with-docs`, formal verification, `statechart`) and where each stands. The README gains usage examples.
 - README rewritten shorter. Updating means running the install command again: tested with skills CLI 1.8.1, `npx skills update` replaces copied folders with links to an absolute path on the installer's machine, which break once committed.
 
 ## 1.0.0 (27 November 2026)

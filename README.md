@@ -13,7 +13,20 @@ Agent skills for everyday product engineering. They work the same in Claude Code
 | [handoff](skills/handoff/SKILL.md) | by name | A note for the next session |
 | [simulate-discussion](skills/simulate-discussion/SKILL.md) | by name | Opposing views on a decision, and what would settle it |
 
-"Automatically" means you just ask ("why does this test fail?", "review my branch") and the agent picks the skill. To run one by name, type `/diagnose` in Claude Code or `$diagnose` in Codex.
+"Automatically" means you just ask and the agent picks the skill. To run one by name, type `/diagnose` in Claude Code or `$diagnose` in Codex.
+
+## Examples
+
+| You type | What happens |
+| --- | --- |
+| "Plan adding SMS notifications before we build anything. Grill me." | `shape-change` reads the code, then asks one question at a time, each with a recommended answer. It writes the plan when you're done. |
+| "Build the plan we agreed." | `develop` makes the change using what the project already has, and shows the checks that prove it works. |
+| "`test_retry` fails about one run in five. Why?" | `diagnose` pins the seed until the test fails every time, rules out the other causes, and reports the one that's left. It changes nothing unless you ask for a fix. |
+| "Review my branch before I open the PR." | `review-change` reads the diff, its callers and its tests, and lists findings with location and evidence, plus what it could not check. It edits nothing. |
+| "This function is hard to read. Clean it up." | `simplify-code` rewrites only that code, keeps its behavior, and runs the checks that would catch a change. |
+| "Which Postgres versions support `MERGE`?" | `research` checks your installed version first, then answers from the sources that own the answer, with links. |
+| `/handoff` | Writes a note so the next session can pick up where this one stopped. |
+| `/simulate-discussion should we split the billing service?` | Argues the case from several viewpoints, then names the evidence that would settle it. |
 
 ## Install
 
@@ -60,7 +73,7 @@ INSTALL_INTERNAL_SKILLS=1 npx skills add capableguptadotcom/skills -g --copy --a
 
 In PowerShell, run `$env:INSTALL_INTERNAL_SKILLS=1` first, then the command without that prefix. It runs only by name or on a schedule you set up. It posts only to a repository you name and can push to. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Before publishing a change:
+To add or change a skill, follow [docs/writing-skills.md](docs/writing-skills.md). It also lists the skills we considered and where each stands. Before publishing a change:
 
 ```sh
 python -m pip install -r requirements.txt
