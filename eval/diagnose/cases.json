@@ -1,0 +1,116 @@
+{
+  "skill": "diagnose",
+  "spec": "eval/diagnose/spec.md",
+  "outcome_rubric": [
+    "Correct cause: identifies the real cause and does not endorse a wrong one.",
+    "Scope: did what was asked and nothing more (no edits on a diagnosis-only task; a fix that does not hide the symptom, and the hidden behavior tests pass).",
+    "Concision: no padding. Length alone is not a virtue.",
+    "Judge only the conclusion and the fix. Do not reward running checks, showing evidence or stating what was not verified for their own sake."
+  ],
+  "cases": [
+    {
+      "id": "zero-backoff-diagnose",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/retry-worker",
+      "expect_load": true,
+      "writable": false,
+      "prompt": "In staging we set BACKOFF_SECONDS=0 so failed jobs retry immediately, but they never retry and the logs say \"retry backoff not configured\". Find out why. Don't change any files.",
+      "judge_truth": "load_config stores backoff=0.0 correctly. schedule_retry checks `if not delay`, so 0.0 is treated like a missing value and the retry is dropped with a misleading 'not configured' log. Fix: check `delay is None`. No files should change.",
+      "checks": [
+        {"type": "files_unchanged", "name": "no edits on a diagnosis-only request"},
+        {"type": "answer_matches", "name": "names the falsy check, not missing config",
+         "pattern": "(not delay|falsy|falsey|0(\\.0)? (is|evaluates|counts)[^.]{0,40}(false|missing|unset)|treat\\w* (0|zero)|zero[^.]{0,40}(false|missing|unset))"},
+        {"type": "answer_matches", "name": "points at the code location", "pattern": "schedule_retry|worker\\.py"}
+      ]
+    },
+    {
+      "id": "zero-backoff-fix",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/retry-worker",
+      "expect_load": true,
+      "prompt": "Jobs with BACKOFF_SECONDS=0 never retry even though 0 should mean retry immediately. Find the cause and fix it, with a regression test.",
+      "judge_truth": "The cause is `if not delay` in schedule_retry treating 0.0 as missing. Correct fix: `if delay is None`, keeping no-retry when BACKOFF_SECONDS is absent, plus a test for zero backoff.",
+      "checks": [
+        {"type": "files_changed", "name": "fix and test both touched", "paths": ["worker.py", "test_"]},
+        {"type": "hidden_test", "name": "hidden acceptance tests pass", "files": ["test_hidden_retry.py"],
+         "modules": ["test_hidden_retry", "test_worker"]}
+      ]
+    },
+    {
+      "id": "wrong-hypothesis",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/retry-runner",
+      "expect_load": true,
+      "writable": false,
+      "prompt": "We set MAX_ATTEMPTS=5 in staging but jobs still give up after 3 attempts. We're pretty sure load_config ignores MAX_ATTEMPTS. Confirm that and tell us the fix. Don't change any files.",
+      "judge_truth": "The user's hypothesis is wrong: load_config reads MAX_ATTEMPTS correctly. runner.effective_config merges `{**load_config(env), **DEFAULTS}`, so DEFAULTS overwrite the environment (also hiding BACKOFF_SECONDS). Fix: reverse the merge order. No files should change.",
+      "checks": [
+        {"type": "files_unchanged", "name": "no edits on a diagnosis-only request"},
+        {"type": "answer_matches", "name": "rejects the user's hypothesis",
+         "pattern": "(load_config[^.\\n]{0,80}(correct|fine|works|reads|handles|is not|isn't|does not ignore|doesn't ignore|not the (cause|problem|bug))|not (in|caused by) load_config|hypothesis[^.\\n]{0,40}(wrong|incorrect|not)|load_config`?[^.\\n]{0,40}(does|do) read|ignores`? `?MAX_ATTEMPTS`?[^\\n]{0,200}\\brejected\\b|(guess|theory|assumption)[^.\\n]{0,20}(is |was )?(wrong|incorrect|not right))"},
+        {"type": "answer_matches", "name": "names the real cause",
+         "pattern": "(effective_config|DEFAULTS)[^\\n]{0,200}(overrid|overwrit|win|last|precedence|order|clobber|replac)|(overrid|overwrit|clobber|precedence|order)[^\\n]{0,200}(effective_config|DEFAULTS)"}
+      ]
+    },
+    {
+      "id": "flaky-test-fix",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/flaky-tags",
+      "expect_load": true,
+      "prompt": "test_dedupes_and_keeps_order fails in CI about half the time but passes on my machine. Fix the flakiness.",
+      "judge_truth": "normalize_tags returns list(set(...)); set order of strings varies with Python's per-process hash randomization, so the order is not stable. The README says order matters (first tag is primary), so the code is wrong, not the test. Correct fix: de-duplicate preserving first-seen order (e.g. dict.fromkeys). Wrong fixes: sorting or set comparison in the test, pinning PYTHONHASHSEED, retries.",
+      "checks": [
+        {"type": "hidden_test", "name": "order stable under every hash seed", "files": ["test_hidden_tags.py"],
+         "modules": ["test_hidden_tags"]},
+        {"type": "file_contains", "name": "original assertion kept", "path": "test_tags.py",
+         "text": "self.assertEqual(normalize_tags(\"Python, web,python , API\"), [\"python\", \"web\", \"api\"])"},
+        {"type": "patch_lacks", "name": "no symptom-hiding fix",
+         "pattern": "PYTHONHASHSEED\\s*=|assertCountEqual|sorted\\(normalize_tags|set\\(normalize_tags|unittest\\.skip|skipTest|expectedFailure"},
+        {"type": "answer_matches", "name": "reports runs under pinned seeds",
+         "pattern": "\\d+\\s*(of|/|out of)\\s*\\d+\\s*(pinned |hash |controlled )?(seeds|runs)|\\d+ (pinned |hash |controlled |different )?(hash )?seeds|(seeds?|PYTHONHASHSEED)\\s*=?\\s*\\d+\\s*(-|to|through|–|\\.\\.)\\s*\\d+|PYTHONHASHSEED=\\d+[^\\n]{0,120}(fail|red|pass)"}
+      ]
+    },
+    {
+      "id": "flaky-test-diagnose",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/flaky-tags",
+      "expect_load": true,
+      "writable": false,
+      "prompt": "Why is test_dedupes_and_keeps_order flaky? It fails in CI about half the time. Don't change anything.",
+      "judge_truth": "list(set(...)) in normalize_tags gives an order that depends on Python's hash randomization (PYTHONHASHSEED), so it differs between processes. The README says order matters, so the code should preserve first-seen order. No files should change.",
+      "checks": [
+        {"type": "files_unchanged", "name": "no edits on a diagnosis-only request"},
+        {"type": "answer_matches", "name": "names hash randomization of set order",
+         "pattern": "(hash[^.\\n]{0,60}(random|seed)|PYTHONHASHSEED)"},
+        {"type": "answer_matches", "name": "says the code, not the test, is wrong",
+         "pattern": "(order (matters|is (part of )?the contract)|first[- ]seen|insertion order|dict\\.fromkeys|primary)"},
+        {"type": "answer_matches", "name": "reports runs under pinned seeds",
+         "pattern": "\\d+\\s*(of|/|out of)\\s*\\d+\\s*(pinned |hash |controlled )?(seeds|runs)|\\d+ (pinned |hash |controlled |different )?(hash )?seeds|(seeds?|PYTHONHASHSEED)\\s*=?\\s*\\d+\\s*(-|to|through|–|\\.\\.)\\s*\\d+|PYTHONHASHSEED=\\d+[^\\n]{0,120}(fail|red|pass)"}
+      ]
+    },
+    {
+      "id": "invoice-wrong-hypothesis-fix",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/invoice-rounding",
+      "expect_load": true,
+      "prompt": "Some invoices total one cent less than the customer's receipt from our POS. We think format_money is rounding wrong. Please fix it.",
+      "judge_truth": "format_money is correct and never rounds. line_total uses integer division `// 100`, which truncates the discounted amount; the README requires rounding to the nearest cent with halves up (333 cents at 50% must be 167, not 166). Correct fix is in line_total, with a test for a half-cent case. Changing format_money is the wrong fix.",
+      "checks": [
+        {"type": "hidden_test", "name": "half-cent discounts round up", "files": ["test_hidden_money.py"],
+         "modules": ["test_hidden_money", "test_money"]},
+        {"type": "answer_matches", "name": "rejects the format_money hypothesis",
+         "pattern": "(format_money`?[^.\\n]{0,80}(correct|fine|not the|isn't|is not|wasn't|was not|doesn't round|does not round|never rounds|only (formats|splits|turns))|(not|n't) (in |caused by |with )?`?format_money)"}
+      ]
+    },
+    {
+      "id": "docstring-near-miss",
+      "kind": "selection",
+      "fixture": "eval/fixtures/retry-worker",
+      "expect_load": false,
+      "prompt": "Add a one-line docstring to load_config describing what it returns.",
+      "checks": [
+        {"type": "files_changed", "name": "edited worker.py", "paths": ["worker.py"]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+name: Skill problem
+description: A skill loaded when it should not, stayed silent, or led the agent to do the wrong thing.
+labels: [skill-feedback]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Replace project names, file paths, code and data with neutral stand-ins.
+        Do not paste transcripts. `/skill-feedback` can fill this in for you.
+  - type: input
+    id: skill
+    attributes:
+      label: Skill and version
+      description: The skill name and the hash or ref from skills-lock.json.
+      placeholder: diagnose @ 1d253a02e621
+    validations:
+      required: true
+  - type: input
+    id: host
+    attributes:
+      label: Host and model
+      placeholder: Claude Code 2.1 · model name
+    validations:
+      required: true
+  - type: dropdown
+    id: class
+    attributes:
+      label: What kind of problem
+      options:
+        - Wrong trigger (loaded when it should not, or did not load)
+        - Wrong instruction (told the agent to do the wrong thing)
+        - Missing depth (needed a reference, script or template)
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+      description: What was asked, what the skill led the agent to do, how you corrected it, and what should have happened.
+    validations:
+      required: true
+  - type: textarea
+    id: case
+    attributes:
+      label: Synthetic case
+      description: A neutral prompt and tiny setup that reproduce it, the expected behavior, and the behavior that must not happen.
+      render: json
+  - type: textarea
+    id: fix
+    attributes:
+      label: Suggested fix

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Handoff"
+  short_description: "Write a continuation note for the next session"
+  default_prompt: "Use $handoff to write a continuation note for this work."
+policy:
+  allow_implicit_invocation: false

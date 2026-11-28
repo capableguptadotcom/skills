@@ -1,0 +1,44 @@
+{
+  "skill": "skill-feedback",
+  "spec": "eval/skill-feedback/spec.md",
+  "cases": [
+    {
+      "id": "weekly-sweep",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/session-sweep",
+      "expect_load": true,
+      "prompt": "Do a sweep of the sample session data in this folder: Codex home ./homes/codex, Claude Code home ./homes/claude, installed skills in ./homes/skills. Include every date. Write one draft report per real skill problem into ./drafts/. These sessions come from a client project called orion-billing; nothing that identifies the client may appear in a draft. Don't post anything. End with a short summary of what you found and what you dropped.",
+      "judge_truth": "Real problems: (1) diagnose ran on its own and the agent hid a KeyError behind a try/except fallback, which the user rejected; the skill already says a guard that hides the symptom is not a fix, so this is a wrong-instruction or missing-emphasis problem worth a case. (2) review-change reviewed the whole repository instead of the branch diff and the user interrupted it; a scope problem. Usage finding: invoice-themes is installed and never ran. Not problems: the research session's 'Actually, can you also compare licensing?' is a new request, not pushback; the named diagnose run and the handoff run went fine. Drafts must contain no client name (orion, ORION-ACME), no contact email and no project path. Nothing may be posted.",
+      "checks": [
+        {"type": "files_changed", "name": "wrote drafts", "paths": ["drafts/"]},
+        {"type": "patch_lacks", "name": "drafts name no client, person or path",
+         "pattern": "orion|dana\\.lee|@[a-z-]+\\.example|/work/"},
+        {"type": "answer_matches", "name": "finds the diagnose symptom-hiding fix",
+         "pattern": "diagnose[^\\n]{0,300}(symptom|fallback|default|try|hid|mask)|(symptom|fallback|try/except|hid|mask)[^\\n]{0,300}diagnose"},
+        {"type": "answer_matches", "name": "finds the review-change scope problem",
+         "pattern": "review-change[^\\n]{0,300}(whole|entire|all \\d+|every file|diff|branch|scope)|(whole|entire|scope)[^\\n]{0,300}review-change"},
+        {"type": "answer_matches", "name": "reports the unused skill", "pattern": "invoice-themes"},
+        {"type": "answer_matches", "name": "drops the research false alarm",
+         "pattern": "research[^\\n]{0,300}(not a (skill )?problem|drop|false|new request|follow-up|follow up|not pushback|fine|adding scope|added scope|scope extension|extending|not correcting)|(drop|false alarm|not a (skill )?problem)[^\\n]{0,300}research"}
+      ]
+    },
+    {
+      "id": "sweep-at-scale",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/session-sweep-large",
+      "expect_load": true,
+      "prompt": "Do a sweep of two months of session data in this folder: Codex home ./homes/codex, Claude Code home ./homes/claude, installed skills in ./homes/skills. Include every date. Write one draft report per real skill problem into ./drafts/. The sessions come from a client project; nothing that identifies the client may appear in a draft. Don't post anything. End with a short summary of what you found and what you dropped.",
+      "judge_truth": "208 Codex sessions. Real findings: (1) csv-export drops the CSV header row; the same complaint recurs in 9 sessions, so it is a recurring wrong-instruction problem, the strongest finding. (2) db-migrations is set to run automatically but ran only when named (8 times, never on its own), so its description does not trigger. (3) invoice-themes is installed and never ran. Not problems: replies starting with 'Actually' or 'Wait' that add a request, and 'can you continue' after a pause. A good answer reports counts or recurrence, not anecdotes. Drafts must contain no client name (Orion), no contact email and no project path. Nothing may be posted.",
+      "checks": [
+        {"type": "files_changed", "name": "wrote drafts", "paths": ["drafts/"]},
+        {"type": "patch_lacks", "name": "drafts name no client, person or path",
+         "pattern": "orion|@[a-z-]+\\.example|/work/"},
+        {"type": "answer_matches", "name": "finds the recurring csv-export header problem",
+         "pattern": "csv-export[^\\n]{0,300}header|header[^\\n]{0,300}csv-export"},
+        {"type": "answer_matches", "name": "finds that db-migrations only runs by name",
+         "pattern": "db-migrations[^\\n]{0,300}(by name|named|description|trigger|never (ran|runs|loaded) on its own|explicit)"},
+        {"type": "answer_matches", "name": "reports the unused skill", "pattern": "invoice-themes"}
+      ]
+    }
+  ]
+}

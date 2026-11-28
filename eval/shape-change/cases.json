@@ -1,0 +1,137 @@
+{
+  "skill": "shape-change",
+  "spec": "eval/shape-change/spec.md",
+  "rubric": [
+    "Substance: surfaces the decisions and risks the ground truth names; recommendations follow from the repository's facts; nothing wrong is claimed about the code.",
+    "Uses the repository: facts the code answers are looked up, not asked of the user; questions left for the user are ones only they can decide.",
+    "Fit to the request: gives what was asked for (an interview turn, a recommendation, or a plan), edits no files and does not reopen decisions the user says are settled.",
+    "Actionable: each question or step is specific, and recommendations say why.",
+    "Concision: no padding. Length alone is not a virtue."
+  ],
+  "cases": [
+    {
+      "id": "grill-sms-plan",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/notify-service",
+      "expect_load": true,
+      "writable": false,
+      "prompt": "Grill me on this plan before I start: we add SMS shipping notifications by calling a new send_sms() right after the email send in notify(), using the customer's phone number, with the same retry behavior as email.",
+      "judge_truth": "Repository facts the agent should find itself rather than ask: Customer (from the accounts service) has no phone field, so there is no number to send to yet; notify() raises on failure and jobs.run retries the whole job, so if SMS fails after the email succeeded the email is sent again on every retry (up to 5 attempts), and an SMS failure can dead-letter a job whose email already went out; four worker processes. Decisions only the user can make: where phone numbers and SMS consent come from (opt-in, regulation), whether a channel's failure should block the other (recommended: one job per channel, or record per-channel success), SMS provider and cost. A good first turn reports these facts, asks one or a few focused questions, each with a recommended answer, and edits no files. Asking the user what the code already shows (how retries work, whether Customer has a phone) is a weakness.",
+      "checks": [
+        {"type": "files_unchanged", "name": "no edits while planning"},
+        {"type": "answer_matches", "name": "finds there is no phone number",
+         "pattern": "(no|not? (have|has|include|contain)|lacks?|missing|without|doesn't (have|carry|include)|does not (have|carry|include))[^.\\n]{0,60}phone|phone[^.\\n]{0,80}(not (on|in|part of|present|stored|exist)|doesn't exist|does not exist|no field|missing|isn't|is not)|neither[^.\\n]{0,40}phone"},
+        {"type": "answer_matches", "name": "sees the whole-job retry resends email",
+         "pattern": "(retr\\w*[^.\\n]{0,160}(email|e-mail)[^.\\n]{0,80}(again|twice|duplicate|resen|re-sen|repeat)|(duplicate|twice|again|resen|re-sen|repeat)[^.\\n]{0,160}(retr|email))|retr\\w*[^\\n]{0,300}(identical|copies of|five|several|multiple)[^.\\n]{0,25}(shipping )?e-?mails?"}
+      ]
+    },
+    {
+      "id": "dedupe-design",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/notify-service",
+      "expect_load": true,
+      "writable": false,
+      "prompt": "Customers sometimes get the same shipping email twice, when the mailer times out after actually sending and the job is retried. Should we dedupe with an in-memory set of order ids in the worker, or with a table in Postgres? Think it through and give me a recommendation.",
+      "judge_truth": "Recommend the Postgres table (the service already owns the notify schema): production runs four worker processes and a retried job can land on any of them, and an in-memory set is lost on restart, so it cannot dedupe. Use a unique key such as (order_id, notification kind). The real limit: when the mailer times out, the service cannot know whether the email went out, so exactly-once is impossible without the provider's help. Recording before sending risks losing an email; recording after sending still double-sends on a timeout; the best fix is an idempotency key or message id at the mail provider if it supports one, otherwise choose at-least-once or at-most-once deliberately. No files should change.",
+      "checks": [
+        {"type": "files_unchanged", "name": "no edits while planning"},
+        {"type": "answer_matches", "name": "uses the four-process fact",
+         "pattern": "(four|4|multiple|several|separate)[^.\\n]{0,40}(worker|process)"}
+      ]
+    },
+    {
+      "id": "agreed-plan",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/notify-service",
+      "expect_load": true,
+      "writable": false,
+      "prompt": "We've agreed to move to one job per notification channel, so a failed channel retries on its own. Email stays the only channel for now; SMS comes later. Write the implementation plan. Don't change any code yet.",
+      "judge_truth": "A short plan, not an interview: the decision is settled. Steps: introduce a per-channel job type (for example {'type': 'notify', 'channel': 'email', ...}) and a handler per channel in jobs.handle; have the producer enqueue one job per channel; keep handling the existing 'order_shipped' job type during the rollout, because jobs already queued or being retried in the old shape must still be processed (remove it once the queue has drained); tests that a failing channel is retried alone and that an old-shape job still sends one email. Today only email exists, so behavior should be unchanged. Asking the user to reconfirm the approach or redesigning it is a weakness. No files should change.",
+      "checks": [
+        {"type": "files_unchanged", "name": "no edits while planning"},
+        {"type": "answer_matches", "name": "keeps old queued jobs working",
+         "pattern": "(in[- ]flight|already[- ](queued|enqueued|in the queue)|queued jobs|existing jobs|old[- ](job|format|shape|type|style)|order_shipped[^.\\n]{0,80}(still|keep|continue|compat|alias|both|drain|legacy)|backward|backwards|compatib|legacy|drain)"}
+      ]
+    },
+    {
+      "id": "grill-sms-conversation",
+      "kind": "conversation",
+      "fixture": "eval/fixtures/notify-service",
+      "expect_load": true,
+      "writable": false,
+      "prompt": "Grill me on this plan before I start: we add SMS shipping notifications by calling a new send_sms() right after the email send in notify(), using the customer's phone number, with the same retry behavior as email.",
+      "simulated_user": {
+        "facts": "Phone numbers: the accounts service is adding a phone field and an SMS opt-in flag next month; we have no numbers today. Only customers who opted in may get SMS. Provider: Twilio, already under contract; cost is not a concern. If SMS fails, the shipping email must never be sent a second time; SMS can be best-effort. Launch countries: US and Germany. You have not thought about how retries work and expect the agent to know. In this conversation you want decisions and a plan only; you will build it yourself later, so never tell the agent to write code or start implementing.",
+        "replies": 3,
+        "final": "Thanks, that's all from me. Write up what we decided and the plan."
+      },
+      "judge_truth": "Judge the whole conversation. Repository facts the agent should find itself rather than ask: Customer has no phone field; notify() raises on failure and jobs.run retries the whole job up to 5 attempts, so an SMS failure after a successful email resends the email and can dead-letter a job whose email already went out; four worker processes. Good interviewing: early turns report those facts, ask a few focused questions only the user can answer (where numbers and consent come from, failure isolation, provider), each with a recommended answer, and build on the user's replies without re-asking. The final summary should match what the user said: SMS waits for the accounts service's phone field and opt-in flag and sends only to opted-in customers; SMS failure must not resend the email (separate per-channel jobs or per-channel delivery records), SMS best-effort; Twilio; US and Germany (consent rules differ). Inventing user decisions, asking the user what the code shows, or a summary that contradicts the replies are weaknesses. No files change.",
+      "checks": [
+        {
+          "type": "files_unchanged",
+          "name": "no edits while planning"
+        },
+        {
+          "type": "answer_matches",
+          "name": "finds there is no phone number",
+          "pattern": "(no|not? (have|has|include|contain)|lacks?|missing|without|doesn't (have|carry|include)|does not (have|carry|include))[^.\\n]{0,60}phone|phone[^.\\n]{0,80}(not (on|in|part of|present|stored|exist)|doesn't exist|does not exist|no field|missing|isn't|is not)|neither[^.\\n]{0,40}phone"
+        },
+        {
+          "type": "answer_matches",
+          "name": "sees the whole-job retry resends email",
+          "pattern": "(retr\\w*[^.\\n]{0,160}(email|e-mail)[^.\\n]{0,80}(again|twice|duplicate|resen|re-sen|repeat)|(duplicate|twice|again|resen|re-sen|repeat)[^.\\n]{0,160}(retr|email))|retr\\w*[^\\n]{0,300}(identical|copies of|five|several|multiple)[^.\\n]{0,25}(shipping )?e-?mails?"
+        }
+      ]
+    },
+    {
+      "id": "dedupe-conversation",
+      "kind": "conversation",
+      "fixture": "eval/fixtures/notify-service",
+      "expect_load": true,
+      "writable": false,
+      "prompt": "Grill me on how we stop duplicate shipping emails. They happen when the mailer times out after actually sending and the job is retried. I'm leaning toward an in-memory set of order ids in the worker.",
+      "simulated_user": {
+        "facts": "Mail provider: SendGrid; you don't know whether it supports idempotency keys or message ids. If you must choose, you would rather send a duplicate now and then than miss a shipping email. A Postgres table is fine with you; the team already runs migrations for the notify schema. Keeping dedupe records for 30 days is enough. You have not thought about how many workers run. In this conversation you want decisions and a plan only; you will build it yourself later, so never tell the agent to write code or start implementing.",
+        "replies": 3,
+        "final": "Thanks, that's all from me. Write up what we decided and the plan."
+      },
+      "judge_truth": "Judge the whole conversation. The agent should find from the repository that production runs four worker processes (Procfile) and that a failed job is retried as a whole and may land on another process, so an in-memory set cannot dedupe (also lost on restart), and that the service owns a Postgres notify schema. It should push back on the user's lean with those facts rather than accept it. Key limit: on a mailer timeout the service cannot know whether the email went out, so exactly-once is not available without the provider's help; asking whether the provider supports an idempotency key or message id is right. With the user's answers, the final plan should be: a Postgres table with a unique key such as (order_id, notification kind), records kept about 30 days, at-least-once on timeout (the user prefers a rare duplicate to a missed email), and checking SendGrid for an idempotency mechanism. Asking the user how many workers run, or inventing answers, are weaknesses. No files change.",
+      "checks": [
+        {
+          "type": "files_unchanged",
+          "name": "no edits while planning"
+        },
+        {
+          "type": "answer_matches",
+          "name": "uses the four-process fact",
+          "pattern": "(four|4|multiple|several|separate)[^.\\n]{0,40}(worker|process)"
+        }
+      ]
+    },
+    {
+      "id": "grill-locale-plan",
+      "kind": "conversation",
+      "fixture": "eval/fixtures/notify-service",
+      "expect_load": true,
+      "writable": false,
+      "prompt": "Grill me on this before I start: we're launching in France, so I'll add 'fr' to SUBJECTS in notify.py and the shipping email is done.",
+      "simulated_user": {
+        "facts": "The translation agency has delivered French text for the shipping email's subject and body. You believe the accounts service sends locale 'fr' for French customers, but you have not checked. Unknown locales should keep falling back to English. Only the shipping email is in scope; launch is in three weeks. You did not know the email body was in English for everyone. In this conversation you want decisions and a plan only; you will build it yourself later, so never tell the agent to write code or start implementing.",
+        "replies": 3,
+        "final": "Thanks, that's all from me. Write up what we decided and the plan."
+      },
+      "judge_truth": "Judge the whole conversation. The agent should find from notify.py that only the subject is localized: the body is a hard-coded English f-string, so adding 'fr' to SUBJECTS gives French customers a French subject over an English body, and German customers already get an English body today. It should also see that locale comes from the accounts service's Customer record and falls back to English. Good questions: whether the body text is translated (and German too), whether the accounts service really sends 'fr' (worth verifying with that team or sample data), formatting of the tracking line. The final plan should localize the body (for example a per-locale template alongside SUBJECTS), add the French text, keep the English fallback, decide whether to fix German in the same change, and add tests per locale. Missing that the body is English, or asking the user what notify.py does, are weaknesses. No files change.",
+      "checks": [
+        {
+          "type": "files_unchanged",
+          "name": "no edits while planning"
+        },
+        {
+          "type": "answer_matches",
+          "name": "finds the body is not localized",
+          "pattern": "(body|message text|email text)[^.\\n]{0,100}(english|hard-?coded|not (translated|locali[sz]ed)|only the subject|untranslated)|(english|hard-?coded|untranslated|only the subject)[^.\\n]{0,100}body"
+        }
+      ]
+    }
+  ]
+}
