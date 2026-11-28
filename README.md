@@ -18,14 +18,27 @@ A small set of agent skills for everyday product engineering, written to work th
 
 ## Install for a team
 
-In each product repository, install a pinned release of the daily skills and commit the result, so everyone on the team gets the same version:
+In each product repository, at its root, install a release of the daily skills and commit the result. Teammates then get the skills with `git pull`, with nothing to install themselves:
 
 ```sh
-npx skills add capableguptadotcom/skills@<tag> --copy --agent claude-code codex \
+npx skills add https://github.com/capableguptadotcom/skills/tree/<release> --copy --agent claude-code codex \
   --skill shape-change develop diagnose review-change research simplify-code handoff simulate-discussion
 ```
 
-The [skills CLI](https://github.com/vercel-labs/skills) writes `.claude/skills/` for Claude Code and `.agents/skills/` for Codex, and records the version in `skills-lock.json`. Use `--copy`, because symlinks break on Windows checkouts. To update, run `npx skills check` and `npx skills update`, then commit the change in a PR.
+The [skills CLI](https://github.com/vercel-labs/skills) does three things:
+
+- It writes `.claude/skills/` for Claude Code and `.agents/skills/` for Codex.
+- It records the source, the ref and a content hash in `skills-lock.json`.
+- Use `--copy`, because symlinks break on Windows checkouts.
+
+Two things that look right do not work:
+
+- `capableguptadotcom/skills@<release>`: the CLI reads the part after `@` as a skill name, not a version.
+- A release name with a slash (such as `release/1.0`): the CLI cannot clone it.
+
+Use tags such as `v1.0.0`.
+
+**Updating.** `npx skills update -p -y` fetches the same ref the lock records again. So with a tag it changes nothing. To move to a new release, rerun the install command with the new tag, then commit the changed skill folders and `skills-lock.json` in a PR.
 
 `skill-feedback` is left out on purpose. It is the maintainers' tool for improving the pack from their own sessions, and team members' sessions are their own work.
 
@@ -44,7 +57,7 @@ Use one source per skill: do not install the same skill both globally and per pr
 
 If you use the pack, tell the maintainers what you asked, what the skill did and what should have happened, without project names, code or data. Do not open issues or pull requests here.
 
-Maintainers install `skill-feedback` separately (`npx skills add capableguptadotcom/skills@<tag> --copy --skill skill-feedback`) and run it by name. It writes sanitized local drafts, and posts or opens a draft PR only when you name the repository in that session. It never runs on its own or on a schedule. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Maintainers install `skill-feedback` for themselves only, globally (`npx skills add https://github.com/capableguptadotcom/skills/tree/<release> -g --copy --agent claude-code codex --skill skill-feedback`), and run it by name. It writes sanitized local drafts, and posts or opens a draft PR only when you name the repository in that session. It never runs on its own or on a schedule. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Maintain
 
