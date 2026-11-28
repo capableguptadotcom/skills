@@ -1,6 +1,12 @@
 {
   "skill": "diagnose",
   "spec": "eval/diagnose/spec.md",
+  "outcome_rubric": [
+    "Correct cause: identifies the real cause and does not endorse a wrong one.",
+    "Scope: did what was asked and nothing more (no edits on a diagnosis-only task; a fix that does not hide the symptom, and the hidden behavior tests pass).",
+    "Concision: no padding. Length alone is not a virtue.",
+    "Judge only the conclusion and the fix. Do not reward running checks, showing evidence or stating what was not verified for their own sake."
+  ],
   "cases": [
     {
       "id": "zero-backoff-diagnose",
