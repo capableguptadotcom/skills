@@ -1,0 +1,58 @@
+{
+  "skill": "review-change",
+  "spec": "eval/review-change/spec.md",
+  "rubric": [
+    "Real defects: reports the defects the ground truth names, each with a reachable trigger, the wrong outcome and a location, ranked by impact; does not present non-defects, style or speculation as defects. On a correct change, saying there are no blocking findings is the right answer.",
+    "Evidence: findings are backed by code read or a check run, not asserted.",
+    "Scope: reviews the change asked about and edits nothing.",
+    "Honesty: says what was not verified or covered.",
+    "Concision: no padding. Length alone is not a virtue."
+  ],
+  "cases": [
+    {
+      "id": "pagination-off-by-one",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/catalog-api",
+      "change": {"path": "eval/fixtures/catalog-changes/pagination", "branch": "feature",
+                 "message": "Add page parameter to list_products"},
+      "expect_load": true,
+      "writable": false,
+      "prompt": "Review the change on this branch against main before I merge it.",
+      "judge_truth": "Blocking defect: pages are numbered from 1 (README and docstring), but list_products computes `start = page * size`, so page 1 (the default) returns the second page. The unchanged caller api.featured() calls list_products(PRODUCTS, size=4) and now shows products 5-8 instead of 1-4 on the home page. Fix: `start = (page - 1) * size`. The tests pass only because they check lengths, not which products come back. Minor: page < 1 is not validated. No files should change.",
+      "checks": [
+        {"type": "files_unchanged", "name": "no edits on a review"},
+        {"type": "answer_matches", "name": "finds the off-by-one",
+         "pattern": "(page\\s*-\\s*1|off[- ]by[- ]one|skips? (over )?the first|1-based|one-based|1-indexed|numbered from 1|second page)"}
+      ]
+    },
+    {
+      "id": "cents-breaks-caller",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/catalog-api",
+      "change": {"path": "eval/fixtures/catalog-changes/integer-cents", "branch": "feature",
+                 "message": "Store feed prices as integer cents to avoid float error"},
+      "expect_load": true,
+      "writable": false,
+      "prompt": "Can you review my last commit?",
+      "judge_truth": "Blocking defect outside the diff: parse_price now returns integer cents (1999) but the unchanged caller report.format_line still formats it as dollars with :.2f, so the daily report prints 'Mug: $1999.00' instead of '$19.99'. No test covers report.py, so the suite passes. Fix: convert cents to dollars in format_line (or format cents directly) and add a report test. Lesser points: int(Decimal * 100) truncates prices with more than two decimals; README still says 'into a number'. No files should change.",
+      "checks": [
+        {"type": "files_unchanged", "name": "no edits on a review"},
+        {"type": "answer_matches", "name": "finds the broken caller", "pattern": "(format_line|report\\.py)"}
+      ]
+    },
+    {
+      "id": "clean-filter",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/catalog-api",
+      "change": {"path": "eval/fixtures/catalog-changes/in-stock-filter", "branch": "feature",
+                 "message": "Add in_stock_only filter to list_products"},
+      "expect_load": true,
+      "writable": false,
+      "prompt": "Please review this branch against main.",
+      "judge_truth": "The change is correct: in_stock_only defaults to False so existing callers are unaffected, the filter runs before the size limit as the docstring says, stock is never negative so `> 0` is right, validation is unchanged, the README is updated and the tests cover both the filter and the default. There is no blocking defect. A good review says so plainly; optional notes (for example no test of in_stock_only with every product sold out) are fine if labelled minor. Inventing bugs or demanding unrelated refactors is wrong. No files should change.",
+      "checks": [
+        {"type": "files_unchanged", "name": "no edits on a review"}
+      ]
+    }
+  ]
+}

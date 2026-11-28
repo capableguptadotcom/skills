@@ -5,6 +5,7 @@ Usage:
     python scripts/run_evals.py run diagnose --host claude --repeats 2 [--case ID] [--model sonnet]
     python scripts/run_evals.py summarize eval/results/<file>.jsonl
     python scripts/run_evals.py judge eval/results/<file>.jsonl [--pair named without] [--model opus]
+    python scripts/run_evals.py judge <pack>.jsonl --against <rival>.jsonl --pair named named --both-orders
 
 Each run copies the case's fixture into a temporary Git repository. Three
 conditions separate selection from usefulness: "without" installs nothing,
@@ -36,8 +37,9 @@ HOME = Path.home()
 DEFAULT_WORK_ROOT = (Path(os.environ.get('SystemDrive', 'C:') + '\\') if os.name == 'nt' else Path('/tmp')) / 'skill-evals'
 WORK_ROOT = Path(os.environ.get('EVAL_WORK_ROOT', DEFAULT_WORK_ROOT))
 SKILL_DIR = {'claude': '.claude/skills', 'codex': '.agents/skills'}
-CLAUDE_TOOLS = ['Read', 'Grep', 'Glob', 'Edit', 'Write', 'Skill', 'Bash(python *)', 'Bash(git *)',
-                'Bash(ls *)', 'Bash(cat *)']
+# Agent and Task let a skill that delegates to subagents work as it does in real sessions.
+CLAUDE_TOOLS = ['Read', 'Grep', 'Glob', 'Edit', 'Write', 'Skill', 'Agent', 'Task', 'Bash(python *)',
+                'Bash(git *)', 'Bash(ls *)', 'Bash(cat *)']
 
 
 def codex_binary():
@@ -130,10 +132,12 @@ def prepare(case, skill, host, condition, skill_path=None, peers=()):
     WORK_ROOT.mkdir(parents=True, exist_ok=True)
     workdir = new_workdir(skill)
     shutil.copytree(ROOT / case['fixture'], workdir, dirs_exist_ok=True)
-    git(workdir, 'init', '-q')
+    git(workdir, 'init', '-q', '-b', 'main')
     (workdir / '.git/info/exclude').write_text('__pycache__/\n*.pyc\n', encoding='utf-8')
-    git(workdir, '-c', 'user.email=eval@example.com', '-c', 'user.name=eval', 'add', '.')
-    git(workdir, '-c', 'user.email=eval@example.com', '-c', 'user.name=eval', 'commit', '-qm', 'fixture')
+    author = ('-c', 'user.email=eval@example.com', '-c', 'user.name=eval')
+    git(workdir, *author, 'add', '.')
+    git(workdir, *author, 'commit', '-qm', 'fixture')
+    apply_change(case, workdir, author)
     if condition == 'with':
         sources = [Path(skill_path) if skill_path else ROOT / 'skills' / skill, *map(Path, peers)]
         for source in sources:
@@ -142,6 +146,25 @@ def prepare(case, skill, host, condition, skill_path=None, peers=()):
         with (workdir / '.git/info/exclude').open('a', encoding='utf-8') as handle:
             handle.write(f'{SKILL_DIR[host].split("/")[0]}/\n')
     return workdir
+
+
+def apply_change(case, workdir, author):
+    """A case's 'change' folder is copied over the fixture: the work to review or clean up.
+    With a 'branch' it is committed there and main keeps the fixture; otherwise it stays uncommitted."""
+    change = case.get('change')
+    if not change:
+        return
+    if change.get('branch'):
+        git(workdir, 'checkout', '-q', '-b', change['branch'])
+    shutil.copytree(ROOT / change['path'], workdir, dirs_exist_ok=True)
+    if change.get('branch'):
+        git(workdir, *author, 'add', '-A')
+        git(workdir, *author, 'commit', '-qm', change.get('message', 'change'))
+    else:
+        # Snapshot the uncommitted change so only the agent's own edits count as its patch.
+        git(workdir, 'add', '-A')
+        (workdir / '.git/eval-baseline').write_text(git(workdir, 'write-tree').strip(), encoding='utf-8')
+        git(workdir, 'reset', '-q')
 
 
 def parse(host, stdout, workdir, skill):
@@ -195,16 +218,22 @@ def redact_record(record):
 
 def full_patch(workdir):
     """Everything the agent changed, new files included, before hidden tests are copied in."""
+    baseline = Path(workdir) / '.git/eval-baseline'
     git(workdir, 'add', '-A')
-    patch = git(workdir, 'diff', '--cached')
+    patch = git(workdir, 'diff', '--cached', *([baseline.read_text(encoding='utf-8')] if baseline.exists() else []))
     git(workdir, 'reset', '-q')
     return patch
 
 
+def touched_paths(patch, prefixes):
+    """Files under the given prefixes that the agent's patch touches."""
+    files = re.findall(r'^diff --git a/(\S+)', patch, re.M)
+    return sorted({f for f in files if any(f.startswith(p) for p in prefixes)})
+
+
 def check(case, workdir, answer, skill, patch=''):
     results = []
-    changed = [line[3:] for line in git(workdir, 'status', '--porcelain').splitlines()
-               if not harness_file(line[3:])]
+    changed = [f for f in re.findall(r'^diff --git a/(\S+)', patch, re.M) if not harness_file(f)]
     for spec in case.get('checks', []):
         kind, ok, detail = spec['type'], False, ''
         if kind == 'files_unchanged':
@@ -212,6 +241,9 @@ def check(case, workdir, answer, skill, patch=''):
         elif kind == 'files_changed':
             ok = all(any(c.startswith(p) for c in changed) for p in spec['paths'])
             detail = ', '.join(changed)
+        elif kind == 'paths_unchanged':
+            touched = touched_paths(patch, spec['paths'])
+            ok, detail = not touched, ', '.join(touched)
         elif kind == 'answer_matches':
             ok = re.search(spec['pattern'], answer, re.I | re.S) is not None
         elif kind == 'patch_lacks':
@@ -330,6 +362,9 @@ def rescore(args):
             elif kind == 'files_changed':
                 ok = all(any(f.startswith(p) for f in files) for p in spec['paths'])
                 detail = ', '.join(files)
+            elif kind == 'paths_unchanged':
+                touched = touched_paths(row.get('patch', ''), spec['paths'])
+                ok, detail = not touched, ', '.join(touched)
             elif kind == 'patch_lacks':
                 added = '\n'.join(l for l in row.get('patch', '').splitlines()
                                   if l.startswith('+') and not l.startswith('+++'))
@@ -359,30 +394,50 @@ WHAT IS ACTUALLY TRUE (ground truth for grading, not shown to the agent):
 {truth}
 
 Rubric, in order of weight:
-1. Correct cause: identifies the real cause and does not endorse a wrong one.
-2. Evidence: claims are backed by something run or read, not asserted.
-3. Scope: did what was asked and nothing more (no edits on a diagnosis-only task; a fix that does not hide the symptom).
-4. Honesty: states what was not verified.
-5. Concision: no padding. Length alone is not a virtue.
+{rubric}
 
 === ANSWER A ===
 {a}
 === CHANGES A MADE ===
 {pa}
+=== HIDDEN BEHAVIOR TESTS RUN ON A'S RESULT ===
+{ta}
 
 === ANSWER B ===
 {b}
 === CHANGES B MADE ===
 {pb}
+=== HIDDEN BEHAVIOR TESTS RUN ON B'S RESULT ===
+{tb}
 
 Reply with one line of JSON and nothing else:
 {{"winner": "A" | "B" | "tie", "reason": "<one sentence>"}}"""
 
 
-def ask_judge(case, first, second, model):
+DEFAULT_RUBRIC = [
+    'Correct cause: identifies the real cause and does not endorse a wrong one.',
+    'Evidence: claims are backed by something run or read, not asserted.',
+    'Scope: did what was asked and nothing more (no edits on a diagnosis-only task; a fix that does not hide the symptom).',
+    'Honesty: states what was not verified.',
+    'Concision: no padding. Length alone is not a virtue.',
+]
+
+
+def hidden_results(case, row):
+    """Results of the case's hidden behavior tests: objective, and say nothing about which skill ran."""
+    names = {c.get('name', c['type']) for c in case.get('checks', []) if c['type'] == 'hidden_test'}
+    found = [f"{c['check']}: {'passed' if c['passed'] else 'FAILED'}" for c in row.get('checks', [])
+             if c['check'] in names]
+    return '\n'.join(found) or '(none for this task)'
+
+
+def ask_judge(case, first, second, model, rubric=None):
+    lines = rubric or DEFAULT_RUBRIC
     prompt = JUDGE_PROMPT.format(task=case['prompt'], truth=case['judge_truth'],
+                                 rubric='\n'.join(f'{i}. {line}' for i, line in enumerate(lines, 1)),
                                  a=first['answer'][:6000], pa=first.get('patch', '')[:4000] or '(none)',
-                                 b=second['answer'][:6000], pb=second.get('patch', '')[:4000] or '(none)')
+                                 b=second['answer'][:6000], pb=second.get('patch', '')[:4000] or '(none)',
+                                 ta=hidden_results(case, first), tb=hidden_results(case, second))
     workdir = new_workdir('judge')
     proc = subprocess.run(['claude', '-p', prompt, '--output-format', 'json', '--setting-sources', 'project',
                            '--no-session-persistence', '--model', model, '--disallowedTools',
@@ -397,19 +452,38 @@ def ask_judge(case, first, second, model):
         return {'winner': 'error', 'reason': (proc.stdout or proc.stderr)[-200:]}
 
 
+def side_label(row, by_variant):
+    return f"{row['variant']}:{row['condition']}" if by_variant else row['condition']
+
+
 def judge(args):
+    """Blind pairwise verdicts per case and repeat. With --against, the right-hand condition comes from a
+    second results file, so two skills run on the same cases can be compared; sides are then labelled
+    variant:condition."""
     rows = [json.loads(line) for line in Path(args.path).read_text(encoding='utf-8').splitlines() if line]
+    others = ([json.loads(line) for line in Path(args.against).read_text(encoding='utf-8').splitlines() if line]
+              if args.against else rows)
     skill = rows[0]['skill']
-    cases = {c['id']: c for c in json.loads((ROOT / 'eval' / skill / 'cases.json').read_text(encoding='utf-8'))['cases']}
+    spec = json.loads((ROOT / 'eval' / skill / 'cases.json').read_text(encoding='utf-8'))
+    cases = {c['id']: c for c in spec['cases']}
     left, right = args.pair
+    by_variant = bool(args.against)
+    left_label = side_label({'variant': rows[0]['variant'], 'condition': left}, by_variant)
+    right_label = side_label({'variant': others[0]['variant'], 'condition': right}, by_variant)
+    if left_label == right_label:
+        sys.exit(f'Both sides are {left_label}; pick different conditions or a different file.')
     rng = __import__('random').Random(args.seed)
-    out = Path(str(Path(args.path).resolve()).replace('.jsonl', f'.judge-{left}-vs-{right}.jsonl'))
+    if args.out:
+        out = Path(args.out).resolve()
+    else:
+        suffix = (f'.judge-{left_label}-vs-{right_label}' if by_variant else f'.judge-{left}-vs-{right}').replace(':', '-')
+        out = Path(str(Path(args.path).resolve()).replace('.jsonl', suffix + '.jsonl'))
     tally = {}
     WORK_ROOT.mkdir(parents=True, exist_ok=True)
     for row in rows:
         if row['condition'] != left:
             continue
-        other = next((r for r in rows if r['case'] == row['case'] and r['repeat'] == row['repeat']
+        other = next((r for r in others if r['case'] == row['case'] and r['repeat'] == row['repeat']
                       and r['condition'] == right), None)
         case = cases.get(row['case'], {})
         if other is None or not case.get('judge_truth') or run_error(row) or run_error(other):
@@ -420,32 +494,38 @@ def judge(args):
             orders.append(orders[0][::-1])
         labels, reasons = [], []
         for first, second in orders:
-            verdict = ask_judge(case, first, second, args.model)
-            labels.append({'A': first['condition'], 'B': second['condition']}.get(verdict.get('winner'),
-                                                                              verdict.get('winner')))
+            verdict = ask_judge(case, first, second, args.model, spec.get('rubric'))
+            names = {'A': side_label(first, by_variant), 'B': side_label(second, by_variant)}
+            labels.append(names.get(verdict.get('winner'), 'error'))
             reasons.append(verdict.get('reason', ''))
         # With both orders, a win counts only when both verdicts agree; otherwise it is a tie.
-        label = labels[0] if len(set(labels)) == 1 else 'tie'
-        verdict = {'reason': reasons[0]}
+        label = 'error' if 'error' in labels else labels[0] if len(set(labels)) == 1 else 'tie'
         first = orders[0][0]
         tally.setdefault(row['case'], {}).setdefault(label, 0)
         tally[row['case']][label] += 1
         with out.open('a', encoding='utf-8') as handle:
-            handle.write(json.dumps({'case': row['case'], 'repeat': row['repeat'], 'shown_first': first['condition'],
-                                     'winner': label, 'verdicts': labels, 'reason': verdict.get('reason'),
+            handle.write(json.dumps({'case': row['case'], 'repeat': row['repeat'],
+                                     'shown_first': side_label(first, by_variant), 'winner': label,
+                                     'verdicts': labels, 'reasons': [redact(r) for r in reasons],
                                      'judge': args.model}) + '\n')
-        print(f"{row['case']:<24} r{row['repeat']} winner={label:<8} {verdict.get('reason', '')[:110]}", flush=True)
-    print(f'\nJudge: {args.model}. Verdicts: {out.relative_to(ROOT)}')
-    for case, counts in tally.items():
-        print(f'  {case:<24} ' + ', '.join(f'{k}={v}' for k, v in sorted(counts.items())))
+        print(f"{row['case']:<28} r{row['repeat']} winner={label:<24} {reasons[0][:100]}", flush=True)
+    print(f'\nJudge: {args.model}. Verdicts: {out}')
+    report_tally(tally, left_label, right_label)
+
+
+def report_tally(tally, left, right):
     total = {}
-    for counts in tally.values():
+    for case, counts in tally.items():
+        print(f'  {case:<28} ' + ', '.join(f'{k}={v}' for k, v in sorted(counts.items())))
         for k, v in counts.items():
             total[k] = total.get(k, 0) + v
+    errors = total.pop('error', 0)
     n = sum(total.values())
     if n:
         wins_or_ties = total.get(left, 0) + total.get('tie', 0)
-        print(f'  overall: {left} wins or ties {wins_or_ties}/{n} ({100 * wins_or_ties / n:.0f}%) against {right}')
+        print(f"  overall: {left} wins {total.get(left, 0)}, ties {total.get('tie', 0)}, loses {total.get(right, 0)}; "
+              f'wins or ties {wins_or_ties}/{n} ({100 * wins_or_ties / n:.0f}%) against {right}'
+              + (f'; {errors} judge errors left out' if errors else ''))
 
 
 def probe(args):
@@ -472,6 +552,8 @@ def main():
     p_judge.add_argument('--pair', nargs=2, default=['named', 'without'], metavar=('CONDITION', 'BASELINE'))
     p_judge.add_argument('--model', default='opus', help='use a different model from the one under test')
     p_judge.add_argument('--seed', type=int, default=7)
+    p_judge.add_argument('--against', help='take the right-hand condition from this results file (another skill)')
+    p_judge.add_argument('--out', help='write verdicts here instead of beside the results file')
     p_judge.add_argument('--both-orders', action='store_true',
                          help='judge each pair in both orders; count a win only when the verdicts agree')
     for p in (p_probe, p_run):
