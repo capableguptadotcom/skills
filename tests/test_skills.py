@@ -49,6 +49,16 @@ class RealSkillTests(unittest.TestCase):
             config = (ROOT / 'skills' / name / 'agents' / 'openai.yaml').read_text(encoding='utf-8')
             self.assertIn('allow_implicit_invocation: false', config, name)
 
+    def test_skill_feedback_never_runs_or_posts_on_its_own(self):
+        """People using the pack do private work: the feedback skill must run only when named, never on a
+        schedule, and never choose where to post (such as the pack's own public repository)."""
+        text = (ROOT / 'skills' / 'skill-feedback' / 'SKILL.md').read_text(encoding='utf-8')
+        self.assertNotRegex(text.lower(), r"host's scheduler|\bcron\b|sweep can run|scheduled run stops")
+        self.assertIn('No scheduled or automatic runs', text)
+        self.assertNotRegex(text, r'Otherwise use the skill.s `source` repository')
+        self.assertIn('Never pick a destination yourself', text)
+        self.assertIn('Post to a repository the user did not name in this session', text)
+
 
 class ValidatorTests(unittest.TestCase):
     def setUp(self):

@@ -12,25 +12,39 @@ A small set of agent skills for everyday product engineering, written to work th
 | [simplify-code](skills/simplify-code/SKILL.md) | automatically | Clearer scoped code with behavior unchanged |
 | [handoff](skills/handoff/SKILL.md) | by name | A continuation note for the next session |
 | [simulate-discussion](skills/simulate-discussion/SKILL.md) | by name | Distinct simulated viewpoints and the evidence that would settle them |
-| [skill-feedback](skills/skill-feedback/SKILL.md) | by name | A sanitized issue or draft PR about a skill problem, posted only after approval |
+| [skill-feedback](skills/skill-feedback/SKILL.md) | by name, maintainers only | Sanitized local drafts about a skill problem; posts only where you name |
 
 "Automatically" means the host picks the skill from its description; no router or instruction file is needed. Explicit skills run with `/name` in Claude Code and `$name` or the `/skills` picker in Codex. They set `disable-model-invocation: true` for Claude Code and `policy.allow_implicit_invocation: false` in `agents/openai.yaml` for Codex.
 
-## Install
+## Install for a team
 
-In each product repository, install a pinned release and commit the result so everyone gets the same version:
+In each product repository, install a pinned release of the daily skills and commit the result, so everyone on the team gets the same version:
 
 ```sh
-npx skills add capableguptadotcom/skills@<tag> --copy
+npx skills add capableguptadotcom/skills@<tag> --copy --agent claude-code codex \
+  --skill shape-change develop diagnose review-change research simplify-code handoff simulate-discussion
 ```
 
-Select Codex and Claude Code. The [skills CLI](https://github.com/vercel-labs/skills) writes `.agents/skills/` for Codex and `.claude/skills/` for Claude Code, and records the version in `skills-lock.json`. Use `--copy` because symlinks break on Windows checkouts. Update with `npx skills check` and `npx skills update`, then commit the change in a PR.
+The [skills CLI](https://github.com/vercel-labs/skills) writes `.claude/skills/` for Claude Code and `.agents/skills/` for Codex, and records the version in `skills-lock.json`. Use `--copy`, because symlinks break on Windows checkouts. To update, run `npx skills check` and `npx skills update`, then commit the change in a PR.
 
-Use one source per skill: do not install the same skill both globally and per project.
+`skill-feedback` is left out on purpose. It is the maintainers' tool for improving the pack from their own sessions, and team members' sessions are their own work.
+
+Use one source per skill: do not install the same skill both globally and per project. If someone already has a personal skill for the same job (a personal `code-review` or `grill-me`, say), remove it, so the host does not have to choose between two.
+
+## Use
+
+- **Just ask for the work.** "Why does this test fail?", "review my branch", "plan this before I build it", "tidy this function". The host picks the matching skill from its description. You can also name one: `/diagnose` in Claude Code, `$diagnose` in Codex.
+- **`handoff` and `simulate-discussion` run only by name.** `handoff` writes a note for the next session. `simulate-discussion` lays out opposing views on a decision.
+- **What to expect.**
+  - Diagnosis and review show their evidence (what was run, what was ruled out, what was not covered) and edit nothing unless you ask for a fix.
+  - `simplify-code` keeps behavior exactly and stays inside the code you point at.
+  - `shape-change` asks one question at a time in an interview and writes the plan when you ask for it.
 
 ## Report a problem
 
-Run `/skill-feedback` (Claude Code) or `$skill-feedback` (Codex) in the session where a skill went wrong. It drafts a sanitized issue or a draft PR with a synthetic test case, shows you the exact text, and posts only after you approve. Without the skill, open an issue with the **Skill problem** template. See [CONTRIBUTING.md](CONTRIBUTING.md).
+If you use the pack, tell the maintainers what you asked, what the skill did and what should have happened, without project names, code or data. Do not open issues or pull requests here.
+
+Maintainers install `skill-feedback` separately (`npx skills add capableguptadotcom/skills@<tag> --copy --skill skill-feedback`) and run it by name. It writes sanitized local drafts, and posts or opens a draft PR only when you name the repository in that session. It never runs on its own or on a schedule. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Maintain
 
@@ -43,7 +57,7 @@ git diff --check
 
 The validator enforces the rules every skill must meet: name format and reserved names, description length, body length, matching invocation settings for both hosts, no references outside the skill folder, Python-only scripts with no network access, no package or tool-server files, and no personal paths. The tests run each bundled script on synthetic input.
 
-A change ships when it beats a no-skill baseline on its evaluation cases in both hosts. Evaluation lives in `eval/`; earlier smoke tests are recorded in [docs/forward-testing.md](docs/forward-testing.md) under the skills' former `kp-` names. Not yet shipped: `verification-skill` (drafts in [drafts/verification-skill](drafts/verification-skill/)) and `open-pr`.
+A change ships when it beats a no-skill baseline on its evaluation cases in both hosts. The current results, and what they can and cannot show, are in [docs/open-decisions.md](docs/open-decisions.md). Evaluation lives in `eval/`; earlier smoke tests are recorded in [docs/forward-testing.md](docs/forward-testing.md) under the skills' former `kp-` names. Not yet shipped: `verification-skill` (drafts in [drafts/verification-skill](drafts/verification-skill/)) and `open-pr`.
 
 Upstream collections are reference material only. The earlier upstream audit is preserved at tag `upstream-audit-2026-10-31`. See [provenance](docs/provenance.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
