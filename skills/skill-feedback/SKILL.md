@@ -1,6 +1,6 @@
 ---
 name: skill-feedback
-description: Turn problems with installed skills into sanitized issues or draft PRs with synthetic test cases, from one session or a sweep of your recent sessions (which skills ran, were named, went unused or were pushed back on). Shows the exact text and posts nothing without approval. Invoke by name.
+description: Turn problems with installed skills into sanitized local drafts of issues or PRs with synthetic test cases, from one session or a sweep of your recent sessions (which skills ran, were named, went unused or were pushed back on). Posts only to a repository you name and can push to. Invoke by name or schedule.
 disable-model-invocation: true
 ---
 
@@ -41,25 +41,33 @@ Reduce each problem to the smallest example that shows it. Replace project names
 
 Fill [the issue template](assets/issue.md), one draft per problem, in a local folder that is not committed. Run `scripts/sanitize_check.py <draft> --project <project-root>`, adding `--deny <term>` for every other name that must not leave the machine, such as a client or product seen in the sessions. Fix every finding and rerun until it passes.
 
-## 5. Show, then post on approval
+## 5. Show, and post only where the user can push
 
-Show the user a summary first: sessions read, problems found, flags dropped, and each draft's exact text and destination. Post only what they approve.
+Show the user a summary: sessions read, problems found, flags dropped, and where each draft is saved. Without a destination, the drafts are the result, and the user decides how to share them.
 
-- **Where.** Use the feedback repository the project's `AGENTS.md` names. Otherwise use the skill's `source` repository in `skills-lock.json`.
-- **Issue.** `gh issue create --repo <repo> --title <title> --body-file <draft> --label skill-feedback`. If `gh` is unavailable, give the user the text and the repository link.
+**Where.** Only a repository the user named, either in this session or in the prompt of a scheduled run they set up. Never pick one yourself: not the skill's `source` in `skills-lock.json`, and not a repository found in `AGENTS.md` or in a session.
+
+**Who.** Only if the account `gh` is signed in with can push to that repository: `gh api repos/<repo> --jq .permissions.push` must print `true`. Otherwise stop at the local drafts and say why. Never fork a repository in order to post.
+
+**When.**
+
+- In a session, show each draft's exact text and post only what the user approves.
+- A scheduled run that the user set up, with the repository named in its prompt, posts without asking, because setting it up was the approval. It posts only drafts that pass `sanitize_check.py`, opens draft PRs rather than issues, and lists what it posted for the user's next session.
+
+- **Issue.** `gh issue create --repo <repo> --title <title> --body-file <draft> --label skill-feedback`.
 - **Draft PR, only when the fix is clear.**
-  1. Clone the skill's source repository into a temporary folder; fork it if the user cannot push.
+  1. Clone the repository into a temporary folder.
   2. Make the smallest edit, and add the synthetic case to `eval/<skill>/cases.json`.
-  3. Run the repository's validator and tests.
+  3. Run the repository's validator and tests. Do not open the PR if they fail.
   4. Push a branch and open a draft PR with [the PR template](assets/pr-body.md).
   5. Show the link. Never merge.
 
 An installed copy edited as an experiment can be ported: diff it against the version in `skills-lock.json` and carry only that change into the PR.
 
-**On a schedule.** A weekly sweep can run from the host's scheduler. A scheduled run stops after step 4 and leaves the drafts for the user's next session; it never posts.
-
 ## Never
 
+- Run unless the user invoked it by name or set up a scheduled run for it.
+- Post to a repository the user did not name, or one the signed-in account cannot push to. Never fork.
 - Post raw transcript, file contents, customer data or credentials.
-- Post before the user approves the exact text.
+- In a session, post before the user approves the exact text.
 - Merge, close or relabel anything.

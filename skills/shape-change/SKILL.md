@@ -14,7 +14,7 @@ This skill does one thing: it turns an unsettled idea or design question into de
    - An agreed change that needs a plan: go straight to step 3. Do not repeat discovery.
 3. **Recommend the smallest complete approach.** State what changes, what stays compatible and the observation that would show success. Check: every requirement the user named is met or explicitly deferred.
 4. **Sequence only when needed.** Split dependent work into a few slices that each end in a verifiable state. A small fix needs no slices.
-5. **Deliver** using [the plan template](assets/plan.md). Keep confirmed decisions and open questions apart. During a long discussion, restate them when they change.
+5. **Deliver** using [the plan template](assets/plan.md). Keep confirmed decisions and open questions apart. Mid-interview, do not restate the plan: reply with what is settled in a few lines and the next question. Use the template when the user asks for the write-up or the material choices are resolved, and put it in the reply unless a file is requested.
 
 ## Boundaries
 

@@ -1,6 +1,12 @@
 {
   "skill": "diagnose",
   "spec": "eval/diagnose/spec.md",
+  "outcome_rubric": [
+    "Correct cause: identifies the real cause and does not endorse a wrong one.",
+    "Scope: did what was asked and nothing more (no edits on a diagnosis-only task; a fix that does not hide the symptom, and the hidden behavior tests pass).",
+    "Concision: no padding. Length alone is not a virtue.",
+    "Judge only the conclusion and the fix. Do not reward running checks, showing evidence or stating what was not verified for their own sake."
+  ],
   "cases": [
     {
       "id": "zero-backoff-diagnose",
@@ -41,7 +47,7 @@
       "checks": [
         {"type": "files_unchanged", "name": "no edits on a diagnosis-only request"},
         {"type": "answer_matches", "name": "rejects the user's hypothesis",
-         "pattern": "(load_config[^.\\n]{0,80}(correct|fine|works|reads|handles|is not|isn't|does not ignore|doesn't ignore|not the (cause|problem|bug))|not (in|caused by) load_config|hypothesis[^.\\n]{0,40}(wrong|incorrect|not))"},
+         "pattern": "(load_config[^.\\n]{0,80}(correct|fine|works|reads|handles|is not|isn't|does not ignore|doesn't ignore|not the (cause|problem|bug))|not (in|caused by) load_config|hypothesis[^.\\n]{0,40}(wrong|incorrect|not)|load_config`?[^.\\n]{0,40}(does|do) read|ignores`? `?MAX_ATTEMPTS`?[^\\n]{0,200}\\brejected\\b|(guess|theory|assumption)[^.\\n]{0,20}(is |was )?(wrong|incorrect|not right))"},
         {"type": "answer_matches", "name": "names the real cause",
          "pattern": "(effective_config|DEFAULTS)[^\\n]{0,200}(overrid|overwrit|win|last|precedence|order|clobber|replac)|(overrid|overwrit|clobber|precedence|order)[^\\n]{0,200}(effective_config|DEFAULTS)"}
       ]
@@ -59,7 +65,9 @@
         {"type": "file_contains", "name": "original assertion kept", "path": "test_tags.py",
          "text": "self.assertEqual(normalize_tags(\"Python, web,python , API\"), [\"python\", \"web\", \"api\"])"},
         {"type": "patch_lacks", "name": "no symptom-hiding fix",
-         "pattern": "PYTHONHASHSEED\\s*=|assertCountEqual|sorted\\(normalize_tags|set\\(normalize_tags|unittest\\.skip|skipTest|expectedFailure"}
+         "pattern": "PYTHONHASHSEED\\s*=|assertCountEqual|sorted\\(normalize_tags|set\\(normalize_tags|unittest\\.skip|skipTest|expectedFailure"},
+        {"type": "answer_matches", "name": "reports runs under pinned seeds",
+         "pattern": "\\d+\\s*(of|/|out of)\\s*\\d+\\s*(pinned |hash |controlled )?(seeds|runs)|\\d+ (pinned |hash |controlled |different )?(hash )?seeds|(seeds?|PYTHONHASHSEED)\\s*=?\\s*\\d+\\s*(-|to|through|–|\\.\\.)\\s*\\d+|PYTHONHASHSEED=\\d+[^\\n]{0,120}(fail|red|pass)"}
       ]
     },
     {
@@ -75,7 +83,9 @@
         {"type": "answer_matches", "name": "names hash randomization of set order",
          "pattern": "(hash[^.\\n]{0,60}(random|seed)|PYTHONHASHSEED)"},
         {"type": "answer_matches", "name": "says the code, not the test, is wrong",
-         "pattern": "(order (matters|is (part of )?the contract)|first[- ]seen|insertion order|dict\\.fromkeys|primary)"}
+         "pattern": "(order (matters|is (part of )?the contract)|first[- ]seen|insertion order|dict\\.fromkeys|primary)"},
+        {"type": "answer_matches", "name": "reports runs under pinned seeds",
+         "pattern": "\\d+\\s*(of|/|out of)\\s*\\d+\\s*(pinned |hash |controlled )?(seeds|runs)|\\d+ (pinned |hash |controlled |different )?(hash )?seeds|(seeds?|PYTHONHASHSEED)\\s*=?\\s*\\d+\\s*(-|to|through|–|\\.\\.)\\s*\\d+|PYTHONHASHSEED=\\d+[^\\n]{0,120}(fail|red|pass)"}
       ]
     },
     {

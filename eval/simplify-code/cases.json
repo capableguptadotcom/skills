@@ -1,0 +1,61 @@
+{
+  "skill": "simplify-code",
+  "spec": "eval/simplify-code/spec.md",
+  "outcome_rubric": [
+    "Behavior preserved: the hidden behavior tests pass and no observable behavior changed (return values, error types and messages, edge cases). A cleaner diff that fails a hidden test loses to a plainer one that passes.",
+    "Real simplification: the code in scope is clearly easier to read; removed only what made it harder to understand; no gratuitous churn of code that was already clear.",
+    "Scope: touched only the code the request covers; mentioned, rather than edited, messy code outside it.",
+    "Judge the resulting code, not the report. Do not reward running checks or stating coverage for their own sake."
+  ],
+  "rubric": [
+    "Behavior preserved: the hidden behavior tests pass and no observable behavior changed (return values, error types and messages, edge cases). A cleaner diff that fails a hidden test loses to a plainer one that passes.",
+    "Real simplification: the code in scope is clearly easier to read; removed only what made it harder to understand; no gratuitous churn of code that was already clear.",
+    "Scope: touched only the code the request covers; mentioned, rather than edited, messy code outside it.",
+    "Evidence and honesty: ran the tests or other checks and says what it could not verify.",
+    "Concision of the report: no padding."
+  ],
+  "cases": [
+    {
+      "id": "named-functions",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/order-utils",
+      "expect_load": true,
+      "prompt": "apply_discount and parse_quantity are really hard to read. Clean them up without changing what they do.",
+      "judge_truth": "Both functions can be flattened with early returns. Behavior that must survive: apply_discount returns the total for None, \"\" and the 0% code EXPIRED; uses floor division (999 at HALF is 500); clamps at 0; codes are case-sensitive; an unknown code raises ValueError('unknown discount code: <code>') exactly. parse_quantity rejects bool with TypeError mentioning bool before the int check (bool is an int subclass), rejects floats and None with TypeError, accepts digit strings with surrounding spaces, rejects '+3' and '-1' with ValueError 'whole number' (so int() on the string is not a drop-in replacement for isdigit), and rejects 0 with 'at least 1'. receipt.py is out of scope.",
+      "checks": [
+        {"type": "files_changed", "name": "edited both files", "paths": ["discounts.py", "quantity.py"]},
+        {"type": "paths_unchanged", "name": "left receipt.py alone", "paths": ["receipt.py"]},
+        {"type": "hidden_test", "name": "behavior kept", "files": ["test_hidden_orders.py"],
+         "modules": ["test_hidden_orders", "test_orders"]}
+      ]
+    },
+    {
+      "id": "current-change",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/order-utils",
+      "change": {"path": "eval/fixtures/order-utils-changes/shipping"},
+      "expect_load": true,
+      "prompt": "Simplify the code I just wrote before I commit it.",
+      "judge_truth": "The current change is the uncommitted new shipping.py (and its test). Good cleanup there: drop the unused `import os` and the unused `_round_up_kg`, inline or simplify `_is_domestic` and the `== True` comparison, remove `cost = cost` and the initial `cost = 0`, flatten the nested band logic (for example a per-region table of base prices and per-kg rates). Behavior to keep: bands at <=1 kg and <=5 kg, ceil of kg over 5, 150 vs 400 per extra kg, express doubles, ValueError('weight must be positive') for 0 and negatives. discounts.py and quantity.py are messy but pre-existing and outside the change: they may be mentioned, not edited.",
+      "checks": [
+        {"type": "files_changed", "name": "edited shipping.py", "paths": ["shipping.py"]},
+        {"type": "paths_unchanged", "name": "left pre-existing code alone", "paths": ["discounts.py", "quantity.py", "receipt.py"]},
+        {"type": "hidden_test", "name": "behavior kept", "files": ["test_hidden_shipping.py"],
+         "modules": ["test_hidden_shipping", "test_shipping"]}
+      ]
+    },
+    {
+      "id": "already-clear",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/order-utils",
+      "expect_load": true,
+      "prompt": "Tidy up receipt.py if it needs it.",
+      "judge_truth": "receipt.py is already short and clear: a cents formatter and a one-line list comprehension. The best answer makes no change or a very small one (for example naming the line total) and says the file is already clear. Rewriting it, adding type hints, docstrings, classes or abstractions is churn. Behavior to keep: '$1.05' padding, an empty list for no items. discounts.py and quantity.py are out of scope.",
+      "checks": [
+        {"type": "paths_unchanged", "name": "left other files alone", "paths": ["discounts.py", "quantity.py"]},
+        {"type": "hidden_test", "name": "behavior kept", "files": ["test_hidden_orders.py"],
+         "modules": ["test_hidden_orders.ReceiptContract", "test_orders"]}
+      ]
+    }
+  ]
+}

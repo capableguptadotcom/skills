@@ -15,6 +15,6 @@ This skill does one thing: it reports what is wrong with a bounded change, with 
 3. **Read what defines correct.** The diff, the originating requirement, the repository's instructions, the changed callers and the tests that establish the affected behavior.
 4. **Ask two questions separately.** Does the change implement the agreed behavior? Can the changed paths fail or break an established convention? A passing check or a review bot's score is evidence with limited coverage.
 5. **Keep only findings you can support.** Each needs a reachable trigger, the wrong outcome and a location. Mark an unverified concern as uncertain. Drop speculation and style that a tool already enforces. Rank by impact, not by how easy the fix is.
-6. **Report** with [the findings template](assets/findings.md), including what you could not cover. No findings is a valid result; it does not prove the change correct.
+6. **Report** with [the findings template](assets/findings.md), including what you could not cover. No findings is a valid result; it does not prove the change correct. Scale it to the change: with one or two findings, a short list instead of the table, and coverage in one line.
 
 Preserve the reviewed files.
