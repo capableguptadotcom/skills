@@ -116,6 +116,15 @@ class BlockedTest(unittest.TestCase):
         self.assertIn('wins or ties 1/1', text)
 
 
+class WilsonTest(unittest.TestCase):
+    def test_interval(self):
+        low, high = run_evals.wilson(8, 12)
+        self.assertAlmostEqual(low, 0.39, places=2)
+        self.assertAlmostEqual(high, 0.86, places=2)
+        self.assertEqual(run_evals.wilson(0, 0), (0.0, 0.0))
+        self.assertEqual(run_evals.wilson(9, 9)[1], 1.0)
+
+
 class JudgeTieTest(unittest.TestCase):
     def test_explicit_tie_is_a_tie_not_an_error(self):
         results = []
@@ -147,6 +156,51 @@ class JudgePromptTest(unittest.TestCase):
         row = {'checks': [{'check': 'behavior kept', 'passed': False}, {'check': 'names the cause', 'passed': True}]}
         self.assertEqual(run_evals.hidden_results(case, row), 'behavior kept: FAILED')
         self.assertEqual(run_evals.hidden_results({'checks': []}, row), '(none for this task)')
+
+
+class ConversationTest(unittest.TestCase):
+    def test_session_flags(self):
+        first = run_evals.command('claude', 'hi', Path('.'), session=('abc', False))
+        later = run_evals.command('claude', 'hi', Path('.'), session=('abc', True))
+        plain = run_evals.command('claude', 'hi', Path('.'))
+        self.assertIn('--session-id', first)
+        self.assertIn('--resume', later)
+        self.assertNotIn('--no-session-persistence', first + later)
+        self.assertIn('--no-session-persistence', plain)
+
+    def test_conversation_turns_and_agent_only_text(self):
+        calls, forgotten = [], []
+
+        def fake_run(cmd, **kwargs):
+            calls.append(cmd)
+            result = {'type': 'result', 'result': f'agent turn {len(calls)}', 'total_cost_usd': 0.1}
+            return type('Proc', (), {'returncode': 0, 'stdout': json.dumps(result), 'stderr': ''})()
+
+        case = {'prompt': 'grill me', 'simulated_user': {'facts': 'x', 'replies': 2, 'final': 'sum up'}}
+        args = type('Args', (), {'host': 'claude', 'model': 'sonnet', 'timeout': 10})()
+        originals = run_evals.subprocess.run, run_evals.simulate_user, run_evals.forget_session
+        run_evals.subprocess.run = fake_run
+        run_evals.simulate_user = lambda case, transcript: ('we have no phone numbers', 0.01)
+        run_evals.forget_session = forgotten.append
+        try:
+            _, parsed = run_evals.converse(args, case, '/shape-change grill me', Path('.'), 'shape-change')
+        finally:
+            run_evals.subprocess.run, run_evals.simulate_user, run_evals.forget_session = originals
+        self.assertEqual(parsed['turns'], 4)  # first turn, two simulated replies, the final request
+        self.assertEqual(calls[-1][2], 'sum up')
+        self.assertIn('[user]\nwe have no phone numbers', parsed['answer'])
+        self.assertNotIn('phone', parsed['agent_text'])
+        self.assertEqual(parsed['final_answer'], 'agent turn 4')
+        self.assertEqual(len(forgotten), 1)
+        self.assertAlmostEqual(parsed['cost_usd'], 0.42)
+
+    def test_conversation_cases_have_facts(self):
+        for path in case_files():
+            for case in json.loads(path.read_text(encoding='utf-8'))['cases']:
+                if case.get('simulated_user'):
+                    with self.subTest(case=case['id']):
+                        self.assertTrue(case['simulated_user']['facts'])
+                        self.assertIn('Judge the whole conversation', case['judge_truth'])
 
 
 if __name__ == '__main__':

@@ -38,8 +38,11 @@ DEFAULT_WORK_ROOT = (Path(os.environ.get('SystemDrive', 'C:') + '\\') if os.name
 WORK_ROOT = Path(os.environ.get('EVAL_WORK_ROOT', DEFAULT_WORK_ROOT))
 SKILL_DIR = {'claude': '.claude/skills', 'codex': '.agents/skills'}
 # Agent and Task let a skill that delegates to subagents work as it does in real sessions.
+# PYTHONHASHSEED=... python is how agents pin hash order when chasing a flaky test; without it, skills that
+# reproduce such failures were held back more than skills that only reason about them. Shell loops over
+# variables stay refused: Claude Code cannot check them before they run, whatever the allowlist says.
 CLAUDE_TOOLS = ['Read', 'Grep', 'Glob', 'Edit', 'Write', 'Skill', 'Agent', 'Task', 'Bash(python *)',
-                'Bash(git *)', 'Bash(ls *)', 'Bash(cat *)']
+                'Bash(PYTHONHASHSEED=* python *)', 'Bash(git *)', 'Bash(ls *)', 'Bash(cat *)']
 
 
 def codex_binary():
@@ -71,10 +74,13 @@ def personal_skill_overrides():
     return f'skills.config=[{entries}]'
 
 
-def command(host, prompt, workdir, model=None, writable=True):
+def command(host, prompt, workdir, model=None, writable=True, session=None):
+    """session is (session_id, resume) for a Claude Code conversation that continues over several turns."""
     if host == 'claude':
+        persistence = (['--resume' if session[1] else '--session-id', session[0]] if session
+                       else ['--no-session-persistence'])
         args = ['claude', '-p', prompt, '--output-format', 'stream-json', '--verbose',
-                '--setting-sources', 'project', '--no-session-persistence',
+                '--setting-sources', 'project', *persistence,
                 '--permission-mode', 'acceptEdits', '--allowedTools', *CLAUDE_TOOLS]
         return args + (['--model', model] if model else [])
     args = [codex_binary(), 'exec', '--json', '--skip-git-repo-check',
@@ -98,6 +104,16 @@ def harness_file(path):
 def git(workdir, *args):
     return subprocess.run(['git', *args], cwd=workdir, capture_output=True, text=True,
                           encoding='utf-8', errors='replace').stdout
+
+
+def remove_workdir(workdir):
+    """Delete a workspace and the project folder Claude Code makes for it, which stays empty when the
+    run stored no session."""
+    shutil.rmtree(workdir, ignore_errors=True)
+    try:
+        (HOME / '.claude/projects' / re.sub(r'[^A-Za-z0-9]', '-', str(workdir))).rmdir()
+    except OSError:
+        pass
 
 
 def new_workdir(prefix):
@@ -287,37 +303,127 @@ def check(case, workdir, answer, skill, patch=''):
     return results
 
 
+SIMULATED_USER = """You are playing the user in a conversation with an AI coding agent. You asked it:
+
+{prompt}
+
+What you know and want, as the user (the only source for your answers):
+{facts}
+
+Answer only from what you know. If the agent asks something not covered there, say you don't know or that
+it should decide. Don't volunteer facts it did not ask about. Never mention that you are simulated.
+Do not answer questions about the code: you expect the agent to read the code itself.
+
+The conversation so far:
+{transcript}
+
+Write your next message to the agent: short, plain words, answering its questions. Output only the message."""
+
+
+def transcript_text(turns):
+    return '\n\n'.join(f'[{who}]\n{text}' for who, text in turns)
+
+
+def simulate_user(case, transcript, model='sonnet'):
+    """The user's next message in a multi-turn case, written by a model that knows only the case's facts."""
+    workdir = new_workdir('user')
+    prompt = SIMULATED_USER.format(prompt=case['prompt'], facts=case['simulated_user']['facts'],
+                                   transcript=transcript)
+    proc = subprocess.run(['claude', '-p', prompt, '--output-format', 'json', '--setting-sources', 'project',
+                           '--no-session-persistence', '--model', model, '--disallowedTools',
+                           'Bash', 'Edit', 'Write', 'Read', 'Glob', 'Grep', 'Skill', 'Agent', 'Task'],
+                          cwd=workdir, capture_output=True, text=True, encoding='utf-8', errors='replace',
+                          timeout=300, stdin=subprocess.DEVNULL)
+    remove_workdir(workdir)
+    try:
+        result = json.loads(proc.stdout)
+        return (result.get('result') or '').strip(), result.get('total_cost_usd') or 0
+    except json.JSONDecodeError:
+        return '', 0
+
+
+def forget_session(session_id):
+    """A multi-turn run stores a session so it can be resumed; delete it so eval runs never reach the
+    user's own session history, or a skill-feedback sweep of it."""
+    for path in (HOME / '.claude/projects').glob(f'*/{session_id}*'):
+        shutil.rmtree(path, ignore_errors=True) if path.is_dir() else path.unlink(missing_ok=True)
+
+
+def converse(args, case, prompt, workdir, loaded_name):
+    """One case: a single turn, or, for a case with 'simulated_user' (Claude Code only), a conversation in
+    which a simulated user answers the agent 'replies' times and may then ask for the 'final' result."""
+    run_kwargs = dict(cwd=workdir, capture_output=True, text=True, encoding='utf-8', errors='replace',
+                      timeout=args.timeout, stdin=subprocess.DEVNULL, env=child_env(args.host))
+    user = case.get('simulated_user')
+    if not user or args.host != 'claude':
+        proc = subprocess.run(command(args.host, prompt, workdir, args.model, case.get('writable', True)),
+                              **run_kwargs)
+        return proc, parse(args.host, proc.stdout, workdir, loaded_name)
+    replies = user.get('replies', 2)
+    session_id, turns, cost, tools, loaded = str(uuid.uuid4()), [], 0.0, 0, False
+    message, first, proc = prompt, None, None
+    try:
+        for turn in range(replies + 1 + bool(user.get('final'))):
+            proc = subprocess.run(command(args.host, message, workdir, args.model, case.get('writable', True),
+                                          session=(session_id, turn > 0)), **run_kwargs)
+            step = parse(args.host, proc.stdout, workdir, loaded_name)
+            first = first or step
+            cost, tools = cost + (step['cost_usd'] or 0), tools + step['tool_calls']
+            loaded = loaded or step['skill_loaded']
+            turns += [('user', message if turn else case['prompt']), ('agent', step['answer'])]
+            if proc.returncode != 0 or not step['answer']:
+                break
+            if turn < replies:
+                message, user_cost = simulate_user(case, transcript_text(turns))
+                cost += user_cost
+                if not message:
+                    break
+            elif user.get('final') and turn == replies:
+                message = user['final']
+    finally:
+        forget_session(session_id)
+    agent_text = '\n\n'.join(text for who, text in turns if who == 'agent')
+    return proc, {**first, 'answer': transcript_text(turns), 'agent_text': agent_text,
+                  'final_answer': turns[-1][1],
+                  'cost_usd': round(cost, 4), 'tool_calls': tools, 'skill_loaded': loaded or first['skill_loaded'],
+                  'turns': len(turns) // 2}
+
+
 def run(args):
     spec = json.loads((ROOT / 'eval' / args.skill / 'cases.json').read_text(encoding='utf-8'))
     cases = [c for c in spec['cases'] if not args.case or c['id'] in args.case]
+    # Conversations resume a stored session, which only the Claude Code runner supports.
+    cases = [c for c in cases if args.host == 'claude' or not c.get('simulated_user')]
     stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-    variant = Path(args.skill_path).name if args.skill_path else args.skill
-    loaded_name = variant
+    # --builtin names a skill the host ships (Claude Code's /code-review, say): nothing is installed and the
+    # named condition invokes the built-in, so a pack skill can be compared with what users already have.
+    if args.builtin:
+        args.conditions = ['named']
+    variant = (f'{args.builtin}-builtin' if args.builtin
+               else Path(args.skill_path).name if args.skill_path else args.skill)
+    loaded_name = args.builtin or variant
     out = Path(args.out).resolve() if args.out else ROOT / 'eval' / 'results' / f'{args.skill}-{variant}-{args.host}-{stamp}.jsonl'
     out.parent.mkdir(parents=True, exist_ok=True)
     for case in cases:
         for repeat in range(args.repeats):
             for condition in args.conditions:
-                installed = 'without' if condition == 'without' else 'with'
+                installed = 'without' if condition == 'without' or args.builtin else 'with'
                 workdir = prepare(case, args.skill, args.host, installed, args.skill_path, args.peer or ())
                 prompt = case['prompt']
                 if condition == 'named':
                     prompt = f"{'/' if args.host == 'claude' else '$'}{loaded_name} {prompt}"
                 started = time.time()
-                proc = subprocess.run(command(args.host, prompt, workdir, args.model,
-                                              case.get('writable', True)),
-                                      cwd=workdir, capture_output=True, text=True, encoding='utf-8',
-                                      errors='replace', timeout=args.timeout,
-                                      stdin=subprocess.DEVNULL, env=child_env(args.host))
-                parsed = parse(args.host, proc.stdout, workdir, loaded_name)
+                proc, parsed = converse(args, case, prompt, workdir, loaded_name)
                 if condition == 'named' and args.host == 'claude' and parsed['skill_available']:
                     # Claude Code expands /<skill> into the prompt without a Skill tool call, so the stream
                     # never shows the load; the skill being listed at start-up is what makes the name resolve.
                     parsed['skill_loaded'] = True
                 patch = full_patch(workdir)
-                checks = check(case, workdir, parsed['answer'], args.skill, patch)
+                # In a conversation only the agent's turns count: the simulated user's answers must not pass a check.
+                checks = check(case, workdir, parsed.pop('agent_text', None) or parsed['answer'], args.skill, patch)
                 record = {'skill': args.skill, 'variant': variant, 'peers': [Path(p).name for p in args.peer or []],
                           'host': args.host, 'model': args.model, 'case': case['id'],
+                          'allowlist': CLAUDE_TOOLS if args.host == 'claude' else None,
                           'condition': condition, 'repeat': repeat, 'exit': proc.returncode,
                           'seconds': round(time.time() - started, 1), 'expect_load': case.get('expect_load'),
                           'passed': all(c['passed'] for c in checks), 'checks': checks,
@@ -334,10 +440,10 @@ def run(args):
                       + (f" INVALID: {record['error']}" if record['error'] else ''), flush=True)
                 if 'usage limit' in record['error'].lower():
                     print('Stopping: the host reports a usage limit, so later runs would be invalid too.')
-                    shutil.rmtree(workdir, ignore_errors=True)
+                    remove_workdir(workdir)
                     summarize(out)
                     return
-                shutil.rmtree(workdir, ignore_errors=True)
+                remove_workdir(workdir)
                 last_message(workdir).unlink(missing_ok=True)
     print(f'\nResults: {out}')
     summarize(out)
@@ -461,10 +567,11 @@ def hidden_results(case, row):
 
 def ask_judge(case, first, second, model, rubric=None):
     lines = rubric or DEFAULT_RUBRIC
+    limit = 16000 if case.get('simulated_user') else 6000  # a conversation is judged whole
     prompt = JUDGE_PROMPT.format(task=case['prompt'], truth=case['judge_truth'],
                                  rubric='\n'.join(f'{i}. {line}' for i, line in enumerate(lines, 1)),
-                                 a=first['answer'][:6000], pa=first.get('patch', '')[:4000] or '(none)',
-                                 b=second['answer'][:6000], pb=second.get('patch', '')[:4000] or '(none)',
+                                 a=first['answer'][:limit], pa=first.get('patch', '')[:4000] or '(none)',
+                                 b=second['answer'][:limit], pb=second.get('patch', '')[:4000] or '(none)',
                                  ta=hidden_results(case, first), tb=hidden_results(case, second))
     workdir = new_workdir('judge')
     proc = subprocess.run(['claude', '-p', prompt, '--output-format', 'json', '--setting-sources', 'project',
@@ -472,7 +579,7 @@ def ask_judge(case, first, second, model, rubric=None):
                            'Bash', 'Edit', 'Write', 'Read', 'Glob', 'Grep', 'Skill'],
                           cwd=workdir, capture_output=True, text=True, encoding='utf-8', errors='replace',
                           timeout=600, stdin=subprocess.DEVNULL)
-    shutil.rmtree(workdir, ignore_errors=True)
+    remove_workdir(workdir)
     try:
         text = json.loads(proc.stdout).get('result', '')
         return json.loads(re.search(r'\{.*\}', text, re.S)[0])
@@ -567,6 +674,16 @@ def retally(path):
         report_tally(tally, left, right)
 
 
+def wilson(k, n, z=1.96):
+    """95% interval for a share of k in n pairs. With a dozen pairs it is wide: 8/12 spans about 39% to 86%,
+    so a share near a threshold does not show which side of it the skill is on."""
+    if not n:
+        return 0.0, 0.0
+    p, d = k / n, 1 + z * z / n
+    centre, half = (p + z * z / (2 * n)) / d, z * ((p * (1 - p) + z * z / (4 * n)) / n) ** 0.5 / d
+    return max(0.0, centre - half), min(1.0, centre + half)
+
+
 def report_tally(tally, left, right):
     total = {}
     for case, counts in tally.items():
@@ -578,7 +695,8 @@ def report_tally(tally, left, right):
     if n:
         wins_or_ties = total.get(left, 0) + total.get('tie', 0)
         print(f"  overall: {left} wins {total.get(left, 0)}, ties {total.get('tie', 0)}, loses {total.get(right, 0)}; "
-              f'wins or ties {wins_or_ties}/{n} ({100 * wins_or_ties / n:.0f}%) against {right}'
+              f'wins or ties {wins_or_ties}/{n} ({100 * wins_or_ties / n:.0f}%, 95% interval '
+              f'{100 * wilson(wins_or_ties, n)[0]:.0f}-{100 * wilson(wins_or_ties, n)[1]:.0f}%) against {right}'
               + (f'; {errors} judge errors left out' if errors else ''))
 
 
@@ -590,7 +708,7 @@ def probe(args):
                           capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=300,
                           stdin=subprocess.DEVNULL, env=child_env(args.host))
     print(parse(args.host, proc.stdout, workdir, '')['answer'] or proc.stderr[-1000:])
-    shutil.rmtree(workdir, ignore_errors=True)
+    remove_workdir(workdir)
 
 
 def main():
@@ -625,6 +743,7 @@ def main():
     p_run.add_argument('--out', help='append to this results file instead of starting a new one')
     p_run.add_argument('--skill-path', help='test another skill folder (e.g. a third-party skill) against these cases')
     p_run.add_argument('--peer', action='append', help='also install this skill folder, for skills that call others')
+    p_run.add_argument('--builtin', help="invoke the host's own skill of this name instead of installing one")
     p_sum.add_argument('path')
     p_tally = sub.add_parser('tally', help='re-count a verdict file, with and without allowlist-blocked pairs')
     p_tally.add_argument('path')
