@@ -1,6 +1,12 @@
 {
   "skill": "simplify-code",
   "spec": "eval/simplify-code/spec.md",
+  "outcome_rubric": [
+    "Behavior preserved: the hidden behavior tests pass and no observable behavior changed (return values, error types and messages, edge cases). A cleaner diff that fails a hidden test loses to a plainer one that passes.",
+    "Real simplification: the code in scope is clearly easier to read; removed only what made it harder to understand; no gratuitous churn of code that was already clear.",
+    "Scope: touched only the code the request covers; mentioned, rather than edited, messy code outside it.",
+    "Judge the resulting code, not the report. Do not reward running checks or stating coverage for their own sake."
+  ],
   "rubric": [
     "Behavior preserved: the hidden behavior tests pass and no observable behavior changed (return values, error types and messages, edge cases). A cleaner diff that fails a hidden test loses to a plainer one that passes.",
     "Real simplification: the code in scope is clearly easier to read; removed only what made it harder to understand; no gratuitous churn of code that was already clear.",

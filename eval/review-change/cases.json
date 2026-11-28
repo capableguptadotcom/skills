@@ -1,6 +1,12 @@
 {
   "skill": "review-change",
   "spec": "eval/review-change/spec.md",
+  "outcome_rubric": [
+    "Real defects: reports the defects the ground truth names, each with a reachable trigger, the wrong outcome and a location, ranked by impact; does not present non-defects, style or speculation as defects. On a correct change, saying there are no blocking findings is the right answer.",
+    "Scope: reviews the change asked about and edits nothing.",
+    "Concision: no padding. Length alone is not a virtue.",
+    "Judge only what was found and whether it is right. Do not reward showing evidence, running checks or stating coverage for their own sake."
+  ],
   "rubric": [
     "Real defects: reports the defects the ground truth names, each with a reachable trigger, the wrong outcome and a location, ranked by impact; does not present non-defects, style or speculation as defects. On a correct change, saying there are no blocking findings is the right answer.",
     "Evidence: findings are backed by code read or a check run, not asserted.",

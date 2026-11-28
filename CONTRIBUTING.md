@@ -29,7 +29,7 @@ A PR that only rewords a description still needs a selection check, because desc
 A skill joins or stays in this pack only if all four hold:
 
 1. **A recurring job.** People ask for it in real sessions, shown by sweeps from more than one person.
-2. **Measurably better.** Against no skill, on its own cases, it wins or ties at least 70% of blind-judged pairs, or it passes a check the baseline fails.
+2. **Measurably better.** Against no skill, on its own cases, it wins or ties at least 70% of blind-judged pairs on the suite's rubric, or it passes a check the baseline fails. Report the 95% interval and the outcome-only re-judge (`judge --outcome-only`) beside it. A win that holds only on the suite rubric is a gain in the report, not in the work; say so, and add a case the baseline fails before claiming more.
 3. **Not already covered.** No other skill in the pack, and no built-in host feature, does the job.
 4. **Cheap to carry.** It passes the validator, installs alone, and its description earns its place in every session's skill listing.
 
