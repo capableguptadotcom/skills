@@ -57,7 +57,9 @@ Use one source per skill: do not install the same skill both globally and per pr
 
 If you use the pack, tell the maintainers what you asked, what the skill did and what should have happened, without project names, code or data. Do not open issues or pull requests here.
 
-Maintainers install `skill-feedback` for themselves only, globally (`npx skills add https://github.com/capableguptadotcom/skills/tree/<release> -g --copy --agent claude-code codex --skill skill-feedback`), and run it by name. It writes sanitized local drafts, and posts or opens a draft PR only when you name the repository in that session. It never runs on its own or on a schedule. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Maintainers install `skill-feedback` for themselves only, globally (`npx skills add https://github.com/capableguptadotcom/skills/tree/<release> -g --copy --agent claude-code codex --skill skill-feedback`), and run it by name or on a schedule they set up. It posts only to a repository you name, and only if the GitHub account `gh` is signed in with can push to it. It never forks. So a maintainer's runs can open draft PRs on this repository, and anyone else's stop at local drafts. Anyone can use it the same way for their own skills repository. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+To stop pull requests from people without access, in this repository's Settings, under Pull requests, choose **Collaborators only** ([GitHub Docs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/disabling-pull-requests)).
 
 ## Maintain
 

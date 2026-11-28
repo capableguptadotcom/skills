@@ -49,15 +49,17 @@ class RealSkillTests(unittest.TestCase):
             config = (ROOT / 'skills' / name / 'agents' / 'openai.yaml').read_text(encoding='utf-8')
             self.assertIn('allow_implicit_invocation: false', config, name)
 
-    def test_skill_feedback_never_runs_or_posts_on_its_own(self):
-        """People using the pack do private work: the feedback skill must run only when named, never on a
-        schedule, and never choose where to post (such as the pack's own public repository)."""
+    def test_skill_feedback_posts_only_where_the_user_can_push(self):
+        """People using the pack do private work. The feedback skill never chooses where to post (such as the
+        pack's own public repository), posts only where the signed-in account can push, and never forks. So
+        a maintainer's scheduled run can open PRs on the pack, and a team member's run cannot."""
         text = (ROOT / 'skills' / 'skill-feedback' / 'SKILL.md').read_text(encoding='utf-8')
-        self.assertNotRegex(text.lower(), r"host's scheduler|\bcron\b|sweep can run|scheduled run stops")
-        self.assertIn('No scheduled or automatic runs', text)
         self.assertNotRegex(text, r'Otherwise use the skill.s `source` repository')
-        self.assertIn('Never pick a destination yourself', text)
-        self.assertIn('Post to a repository the user did not name in this session', text)
+        self.assertIn('Never pick one yourself', text)
+        self.assertIn('--jq .permissions.push', text)
+        self.assertIn('Never fork', text)
+        self.assertIn('scheduled run that the user set up, with the repository named in its prompt', text)
+        self.assertNotRegex(text.lower(), r"host's scheduler|\bcron\b")
 
 
 class ValidatorTests(unittest.TestCase):

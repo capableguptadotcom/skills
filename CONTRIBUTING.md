@@ -11,7 +11,9 @@ Most contributions start as a problem a skill caused in real work. Raw sessions 
 - **Right after a problem.** Run it in that session. It collects the skill version, host and model, classifies the problem, writes a synthetic case and checks the draft for private details.
 - **Over a stretch of work.** Ask it for a sweep of the last 7 days of your own sessions. The script reports, per skill, how often it ran on its own or by name, how often you pushed back or interrupted right after, and which installed skills never ran. The agent reads only the flagged uses and a small sample of ordinary ones, drops the false alarms, and drafts one report per real problem.
 
-In both cases the result is local drafts. It posts an issue or opens a draft pull request only when you name the repository in that session and approve the text. It never runs on a schedule and never picks a destination itself.
+It posts only to a repository you name, and only if the GitHub account `gh` is signed in with can push to it. It never forks and never picks a destination itself. Without push access, the result is local drafts. In a session it posts only text you approve.
+
+**Weekly, automatically.** Set up a scheduled task in your own Claude Code or Codex app, with a prompt that names this repository. For example: `/skill-feedback sweep my last 7 days and open draft PRs on capableguptadotcom/skills`. Setting it up is the approval. It opens draft PRs only for drafts that pass the sanitize check and the repository's tests, and you review and merge them.
 
 **By hand.** Maintainers can also open an issue with the **Skill problem** template. Replace project names, paths, code and data with neutral stand-ins.
 

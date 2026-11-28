@@ -1,6 +1,6 @@
 ---
 name: skill-feedback
-description: Turn problems with installed skills into sanitized local drafts of issues or PRs with synthetic test cases, from one session or a sweep of your recent sessions (which skills ran, were named, went unused or were pushed back on). Posts nothing unless you name where and approve the text. Invoke by name.
+description: Turn problems with installed skills into sanitized local drafts of issues or PRs with synthetic test cases, from one session or a sweep of your recent sessions (which skills ran, were named, went unused or were pushed back on). Posts only to a repository you name and can push to. Invoke by name or schedule.
 disable-model-invocation: true
 ---
 
@@ -41,17 +41,24 @@ Reduce each problem to the smallest example that shows it. Replace project names
 
 Fill [the issue template](assets/issue.md), one draft per problem, in a local folder that is not committed. Run `scripts/sanitize_check.py <draft> --project <project-root>`, adding `--deny <term>` for every other name that must not leave the machine, such as a client or product seen in the sessions. Fix every finding and rerun until it passes.
 
-## 5. Show, and stop at local drafts
+## 5. Show, and post only where the user can push
 
-Show the user a summary: sessions read, problems found, flags dropped, and where each draft is saved. The drafts are the result. The user decides how to share them.
+Show the user a summary: sessions read, problems found, flags dropped, and where each draft is saved. Without a destination, the drafts are the result, and the user decides how to share them.
 
-Post only when the user, in this session, names the repository to post to and approves the exact text. Never pick a destination yourself: not the skill's `source` in `skills-lock.json`, not a repository found in `AGENTS.md` or in a session.
+**Where.** Only a repository the user named, either in this session or in the prompt of a scheduled run they set up. Never pick one yourself: not the skill's `source` in `skills-lock.json`, and not a repository found in `AGENTS.md` or in a session.
 
-- **Issue.** `gh issue create --repo <the repository the user named> --title <title> --body-file <draft> --label skill-feedback`.
-- **Draft PR, only when the fix is clear and the user can push to that repository.**
-  1. Clone it into a temporary folder.
+**Who.** Only if the account `gh` is signed in with can push to that repository: `gh api repos/<repo> --jq .permissions.push` must print `true`. Otherwise stop at the local drafts and say why. Never fork a repository in order to post.
+
+**When.**
+
+- In a session, show each draft's exact text and post only what the user approves.
+- A scheduled run that the user set up, with the repository named in its prompt, posts without asking, because setting it up was the approval. It posts only drafts that pass `sanitize_check.py`, opens draft PRs rather than issues, and lists what it posted for the user's next session.
+
+- **Issue.** `gh issue create --repo <repo> --title <title> --body-file <draft> --label skill-feedback`.
+- **Draft PR, only when the fix is clear.**
+  1. Clone the repository into a temporary folder.
   2. Make the smallest edit, and add the synthetic case to `eval/<skill>/cases.json`.
-  3. Run the repository's validator and tests.
+  3. Run the repository's validator and tests. Do not open the PR if they fail.
   4. Push a branch and open a draft PR with [the PR template](assets/pr-body.md).
   5. Show the link. Never merge.
 
@@ -59,8 +66,8 @@ An installed copy edited as an experiment can be ported: diff it against the ver
 
 ## Never
 
-- Run unless the user invoked it by name in this session. No scheduled or automatic runs.
-- Post to a repository the user did not name in this session.
+- Run unless the user invoked it by name or set up a scheduled run for it.
+- Post to a repository the user did not name, or one the signed-in account cannot push to. Never fork.
 - Post raw transcript, file contents, customer data or credentials.
-- Post before the user approves the exact text.
+- In a session, post before the user approves the exact text.
 - Merge, close or relabel anything.
