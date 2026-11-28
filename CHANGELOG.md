@@ -2,6 +2,11 @@
 
 Each release records what changed and the evaluation summary that justified it.
 
+## Unreleased
+
+- `skill-feedback` sets `metadata.internal: true`. The skills CLI leaves it out unless `INSTALL_INTERNAL_SKILLS=1`, so the team install is now `npx skills add capableguptadotcom/skills --copy --agent claude-code codex -y`, with no skill list. A test checks that only `skill-feedback` is internal.
+- README rewritten shorter. Updating means running the install command again: tested with skills CLI 1.8.1, `npx skills update` replaces copied folders with links to an absolute path on the installer's machine, which break once committed.
+
 ## 1.0.0 (27 November 2026)
 
 The v1 restructure, evaluated against no skill, the personal skills in daily use and the host's built-ins (see [docs/open-decisions.md](docs/open-decisions.md)). Measured mainly in Claude Code with Sonnet. In Codex, only `review-change` and `simplify-code` have been measured so far.

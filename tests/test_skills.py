@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from validate import ROOT, validate
+from validate import ROOT, frontmatter, validate
 
 EXPLICIT_YAML = 'policy:\n  allow_implicit_invocation: false\n'
 
@@ -60,6 +60,16 @@ class RealSkillTests(unittest.TestCase):
         self.assertIn('Never fork', text)
         self.assertIn('scheduled run that the user set up, with the repository named in its prompt', text)
         self.assertNotRegex(text.lower(), r"host's scheduler|\bcron\b")
+
+    def test_skill_feedback_is_left_out_of_a_plain_install(self):
+        """The skills CLI skips skills marked internal unless INSTALL_INTERNAL_SKILLS=1, so a team's
+        `npx skills add <repo>` gets the daily skills without the maintainers' feedback tool."""
+        for source in (ROOT / 'skills').iterdir():
+            if not source.is_dir():
+                continue
+            meta = frontmatter((source / 'SKILL.md').read_text(encoding='utf-8'))
+            internal = (meta.get('metadata') or {}).get('internal', False)
+            self.assertIs(internal, source.name == 'skill-feedback', source.name)
 
 
 class ValidatorTests(unittest.TestCase):
