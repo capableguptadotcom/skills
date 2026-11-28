@@ -2,9 +2,9 @@
 
 Each release records what changed and the evaluation summary that justified it.
 
-## Unreleased
+## 1.0.0 (27 November 2026)
 
-Restructure toward v1. Not yet evaluated against a no-skill baseline; no release tag.
+The v1 restructure, evaluated against no skill, the personal skills in daily use and the host's built-ins (see [docs/open-decisions.md](docs/open-decisions.md)). Measured mainly in Claude Code with Sonnet. In Codex, only `review-change` and `simplify-code` have been measured so far.
 
 - Dropped the `kp-` prefix. New names: `shape-change`, `develop`, `diagnose`, `review-change`, `research`, `simplify-code`, `handoff`, `simulate-discussion`. Four names avoid collisions with host built-ins and common third-party skills.
 - `handoff` and `simulate-discussion` are explicit-only in both hosts. `simulate-discussion` is rebased on the original version in daily use.
