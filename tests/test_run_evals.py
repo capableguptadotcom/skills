@@ -125,6 +125,28 @@ class BlockedTest(unittest.TestCase):
         self.assertIn('wins or ties 1/1', text)
 
 
+class RemoveWorkdirTest(unittest.TestCase):
+    def test_removes_read_only_files_and_the_project_folder(self):
+        workdir = run_evals.new_workdir('cleanup')
+        run_evals.git(workdir, 'init', '-q')
+        (workdir / 'a.txt').write_text('x', encoding='utf-8')
+        run_evals.git(workdir, '-c', 'user.email=e@example.com', '-c', 'user.name=e', 'add', '.')
+        run_evals.git(workdir, '-c', 'user.email=e@example.com', '-c', 'user.name=e', 'commit', '-qm', 'x')
+        home = Path(tempfile.mkdtemp(prefix='home-'))
+        original = run_evals.HOME
+        run_evals.HOME = home
+        try:
+            folder = home / '.claude/projects' / run_evals.re.sub(r'[^A-Za-z0-9]', '-', str(workdir))
+            (folder / 'session/subagents').mkdir(parents=True)
+            (folder / 'session/subagents/agent.jsonl').write_text('{}', encoding='utf-8')
+            run_evals.remove_workdir(workdir)
+            self.assertFalse(workdir.exists())
+            self.assertFalse(folder.exists())
+        finally:
+            run_evals.HOME = original
+            shutil.rmtree(home, ignore_errors=True)
+
+
 class RedactTest(unittest.TestCase):
     def test_paths_inside_lists_are_redacted(self):
         home = str(run_evals.HOME)

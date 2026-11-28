@@ -24,6 +24,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import time
@@ -106,16 +107,30 @@ def git(workdir, *args):
                           encoding='utf-8', errors='replace').stdout
 
 
+def force_rmtree(path):
+    """rmtree that also removes read-only files: on Windows, Git's object files are read-only, and
+    rmtree(ignore_errors=True) silently leaves the whole workspace behind."""
+    def retry(func, target, _exc):
+        os.chmod(target, stat.S_IWRITE)
+        func(target)
+    try:
+        if sys.version_info >= (3, 12):
+            shutil.rmtree(path, onexc=retry)
+        else:
+            shutil.rmtree(path, onerror=retry)
+    except OSError:
+        pass
+
+
 def remove_workdir(workdir):
-    """Delete a workspace and the project folder Claude Code makes for it, which holds only empty folders
-    (memory/) when the run stored no session. A folder with any file in it is kept."""
-    shutil.rmtree(workdir, ignore_errors=True)
+    """Delete a workspace and the project folder Claude Code makes for it. That folder is named after
+    this run's unique workspace, so all it holds is this run's output: empty memory/ folders, and the
+    transcripts of any subagents the agent started, which Claude Code stores even without session
+    persistence and which must not reach the user's session history."""
+    force_rmtree(workdir)
     folder = HOME / '.claude/projects' / re.sub(r'[^A-Za-z0-9]', '-', str(workdir))
-    for path in [*sorted(folder.rglob('*'), reverse=True), folder] if folder.is_dir() else []:
-        try:
-            path.rmdir()
-        except OSError:
-            pass
+    if Path(workdir).parent == WORK_ROOT and folder.is_dir():
+        force_rmtree(folder)
 
 
 def new_workdir(prefix):
@@ -739,7 +754,9 @@ def probe(args):
     proc = subprocess.run(command(args.host, prompt, workdir, args.model, writable=False), cwd=workdir,
                           capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=300,
                           stdin=subprocess.DEVNULL, env=child_env(args.host))
-    print(parse(args.host, proc.stdout, workdir, '')['answer'] or proc.stderr[-1000:])
+    # A host that cannot answer (a usage limit, say) reports why in its event stream, not on stderr.
+    errors = [line for line in proc.stdout.splitlines() if '"error"' in line]
+    print(parse(args.host, proc.stdout, workdir, '')['answer'] or '\n'.join(errors[-2:]) or proc.stderr[-1000:])
     remove_workdir(workdir)
 
 

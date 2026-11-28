@@ -113,9 +113,12 @@ Automated checks passed in every no-skill review and simplify run (9/9 each) and
 | Conversations vs `grill-me` | 3-0-6 (33%) | 4-1-4 (56%) |
 | Conversations vs no skill | 4-0-5 (44%) | 5-0-4 (56%) |
 | Single turn vs `grill-me`, named | 5-1-3 (67%) | 6-0-3 (67%) |
+| Single turn vs `grill-me`, host decides | 4-2-3 (67%) | 6-0-3 (67%) |
+| Single turn vs no skill, named | 7-0-2 (78%) | 7-0-2 (78%) |
+| Single turn vs no skill, host decides | 7-2-0 (100%) | 7-0-2 (78%) |
 | Single-turn checks passed | 18/18 | 18/18 |
 
-The single-turn host-decides and no-skill judgments for the edited skill had judge errors and are not reported here; the verdict files are in `eval/results/h2h3-shape-change-pack-v2-*`.
+The drop against no skill with the host deciding (9/9 to 7/9) is inside both intervals (70-100% and 45-94%). 22 single-turn verdicts first failed on a usage limit and were re-judged with `--redo-errors`.
 
 **Decision.** Keep the edit; it removed the measured failure without hurting single-turn cases. The question of `shape-change` against `grill-me` stays open: in conversations they are now even (4-1-4), and neither clears 70% against no skill there.
 
@@ -148,6 +151,8 @@ The personal skills live outside this repository, in `~/.agents/skills` and `~/.
 
 The edited `diagnose` beats no skill on the suite rubric: named 18-0-0 (interval 82-100%), host decides 15-2-1 (74-99%). On the outcome-only rubric it does not: named 3-2-13, host decides 4-5-9. No skill found the right cause and fix in every `diagnose` and `review-change` fixture. There, the pack's measured gain is evidence and reporting, and the outcome rubric counts those sections as padding. Its one gain in outcome was the regression test on the invoice fix. Only `simplify-code` gained in the work itself. Next steps: harder fixtures that no skill fails, and a test of shorter reports for simple bugs.
 
+**A first harder review fixture did not separate them.** The hypothesis: a large, mostly cosmetic diff hides a subtle change from an unaided review. The new case `noisy-tidy-boundary` sends "just type hints and tidying, no behavior change". The diff touches every module and hides two things. One is a real defect: the size check became exclusive at 100, and the README allows 100. The other is a decoy: a removed `.strip()` that `float()` makes harmless. No skill found the defect in 3 of 3 runs and correctly dismissed the decoy, and so did `review-change`. The hypothesis is rejected for a diff this size. The case stays as a regression check. Separating them on substance probably needs a larger codebase than these fixtures.
+
 ## 8. Publishing
 
 The branch is pushed. No pull request is merged from this work.
@@ -160,7 +165,10 @@ The branch is pushed. No pull request is merged from this work.
 - **`run --builtin NAME`:** compares against a host's own skill.
 - **Conversation cases** (`simulated_user`): run as multi-turn Claude Code sessions.
 - **Judge and simulated-user prompts:** go on stdin. Two conversations passed Windows' 32K command-line limit.
-- **Workspaces:** the empty `~/.claude/projects` folder Claude Code makes for each workspace is removed with it.
+- **Workspaces:** they are now really deleted, along with the `~/.claude/projects` folder Claude Code makes for each.
+  - On Windows, `rmtree(ignore_errors=True)` silently failed on Git's read-only object files: 386 old workspaces had piled up in the eval folder.
+  - Claude Code stores subagent transcripts in that project folder even without session persistence, so eval output could reach the user's session history.
+  - Both were cleaned up: 652 empty project folders, 10 with subagent transcripts, and the 386 workspaces.
 - **`CONTRIBUTING.md`, rule 2:** now names the rubric and asks for the outcome-only re-judge and the interval.
 
 ## Simulated review of the decision rule
