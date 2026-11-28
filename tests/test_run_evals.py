@@ -89,6 +89,33 @@ class RunErrorTest(unittest.TestCase):
         self.assertEqual(run_evals.run_error(record), 'rate limit')
 
 
+class BlockedTest(unittest.TestCase):
+    def test_recorded_denial(self):
+        self.assertIn('command denied', run_evals.blocked({'permission_denials': ['Bash: "for i in 1 2"'], 'answer': ''}))
+
+    def test_answer_that_waits_for_approval(self):
+        answer = 'I need your approval to run the loop script. Once you approve it, I will continue.'
+        self.assertTrue(run_evals.blocked({'answer': answer}))
+
+    def test_ordinary_answer(self):
+        self.assertEqual(run_evals.blocked({'answer': 'I ran the tests; all 5 pass.'}), '')
+
+    def test_tally_with_and_without_blocked(self):
+        rows = [{'case': 'c', 'sides': ['a:named', 'b:named'], 'winner': 'a:named', 'blocked': ['', '']},
+                {'case': 'c', 'sides': ['a:named', 'b:named'], 'winner': 'a:named', 'blocked': ['', 'answer says: x']}]
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / 'v.jsonl'
+            path.write_text(''.join(json.dumps(r) + '\n' for r in rows), encoding='utf-8')
+            from io import StringIO
+            from contextlib import redirect_stdout
+            buffer = StringIO()
+            with redirect_stdout(buffer):
+                run_evals.retally(path)
+        text = buffer.getvalue()
+        self.assertIn('wins or ties 2/2', text)
+        self.assertIn('wins or ties 1/1', text)
+
+
 class JudgePromptTest(unittest.TestCase):
     def test_hidden_results_show_only_hidden_tests(self):
         case = {'checks': [{'type': 'hidden_test', 'name': 'behavior kept'},

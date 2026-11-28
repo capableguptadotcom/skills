@@ -130,6 +130,22 @@ def run_error(record):
     return ''
 
 
+# The run allowlist (CLAUDE_TOOLS) is the same for every condition, but it costs more to a skill that
+# tells the agent to run shell loops. Older records lack permission_denials, so the answer is read too.
+BLOCKED_ANSWER = re.compile(
+    r"(need|needs|require|requires|waiting for|once you|if you|after you|please)\s+(your\s+)?(approv|permission|allow)"
+    r"|approve (it|this|the|running)|(was|were|been|got) (denied|blocked)|permission (was |is )?(denied|needed|required)"
+    r"|not (allowed|permitted) to run|can'?t run|cannot run|couldn'?t run|could not run|unable to run", re.I)
+
+
+def blocked(record):
+    """Why a run was held back by a command the harness did not allow, or '' when it was not."""
+    if record.get('permission_denials'):
+        return 'command denied: ' + ', '.join(record['permission_denials'])[:120]
+    hit = BLOCKED_ANSWER.search(record.get('answer', ''))
+    return f'answer says: {hit[0]}' if hit else ''
+
+
 def prepare(case, skill, host, condition, skill_path=None, peers=()):
     """Copy the fixture into a fresh repo. 'with' installs the skill (and any peers) at project level."""
     WORK_ROOT.mkdir(parents=True, exist_ok=True)
@@ -171,7 +187,7 @@ def apply_change(case, workdir, author):
 
 
 def parse(host, stdout, workdir, skill):
-    loaded, tools, usage, answer, cost, available = set(), 0, {}, '', None, []
+    loaded, tools, usage, answer, cost, available, denials = set(), 0, {}, '', None, [], []
     for line in stdout.splitlines():
         try:
             event = json.loads(line)
@@ -193,6 +209,8 @@ def parse(host, stdout, workdir, skill):
             if event.get('type') == 'result':
                 answer = event.get('result') or ''
                 cost = event.get('total_cost_usd')
+                denials = [str(d.get('tool_name', '?')) + ': ' + json.dumps(d.get('tool_input', ''))[:80]
+                           for d in event.get('permission_denials') or [] if isinstance(d, dict)]
                 usage = event.get('usage') or {}
         else:
             item = event.get('item') or {}
@@ -204,7 +222,8 @@ def parse(host, stdout, workdir, skill):
         last = last_message(workdir)
         answer = last.read_text(encoding='utf-8', errors='replace') if last.exists() else ''
     return {'skill_loaded': skill in loaded, 'skills_loaded': sorted(loaded - {''}), 'tool_calls': tools,
-            'usage': usage, 'cost_usd': cost, 'answer': answer, 'skill_available': skill in available}
+            'usage': usage, 'cost_usd': cost, 'answer': answer, 'skill_available': skill in available,
+            'permission_denials': denials}
 
 
 def redact(text):
@@ -487,7 +506,6 @@ def judge(args):
     else:
         suffix = (f'.judge-{left_label}-vs-{right_label}' if by_variant else f'.judge-{left}-vs-{right}').replace(':', '-')
         out = Path(str(Path(args.path).resolve()).replace('.jsonl', suffix + '.jsonl'))
-    tally = {}
     WORK_ROOT.mkdir(parents=True, exist_ok=True)
     for row in rows:
         if row['condition'] != left:
@@ -510,16 +528,32 @@ def judge(args):
         # With both orders, a win counts only when both verdicts agree; otherwise it is a tie.
         label = 'error' if 'error' in labels else labels[0] if len(set(labels)) == 1 else 'tie'
         first = orders[0][0]
-        tally.setdefault(row['case'], {}).setdefault(label, 0)
-        tally[row['case']][label] += 1
+        verdict_row = {'case': row['case'], 'repeat': row['repeat'], 'sides': [left_label, right_label],
+                       'shown_first': side_label(first, by_variant), 'winner': label, 'verdicts': labels,
+                       'reasons': [redact(r) for r in reasons], 'judge': args.model,
+                       'blocked': [redact(blocked(row)), redact(blocked(other))]}
         with out.open('a', encoding='utf-8') as handle:
-            handle.write(json.dumps({'case': row['case'], 'repeat': row['repeat'],
-                                     'shown_first': side_label(first, by_variant), 'winner': label,
-                                     'verdicts': labels, 'reasons': [redact(r) for r in reasons],
-                                     'judge': args.model}) + '\n')
+            handle.write(json.dumps(verdict_row) + '\n')
         print(f"{row['case']:<28} r{row['repeat']} winner={label:<24} {reasons[0][:100]}", flush=True)
     print(f'\nJudge: {args.model}. Verdicts: {out}')
-    report_tally(tally, left_label, right_label)
+    retally(out)
+
+
+def retally(path):
+    """Tally a verdict file twice: every pair, and without pairs where either run was held back by the allowlist."""
+    rows = [json.loads(line) for line in Path(path).read_text(encoding='utf-8').splitlines() if line]
+    if not rows:
+        print('No verdicts.')
+        return
+    left, right = rows[0]['sides']
+    for title, keep in (('All judged pairs', lambda r: True),
+                        ('Without pairs where a run was held back by the allowlist', lambda r: not any(r.get('blocked', ())))):
+        tally = {}
+        for row in filter(keep, rows):
+            tally.setdefault(row['case'], {}).setdefault(row['winner'], 0)
+            tally[row['case']][row['winner']] += 1
+        print(f'{title}:')
+        report_tally(tally, left, right)
 
 
 def report_tally(tally, left, right):
@@ -579,9 +613,11 @@ def main():
     p_run.add_argument('--skill-path', help='test another skill folder (e.g. a third-party skill) against these cases')
     p_run.add_argument('--peer', action='append', help='also install this skill folder, for skills that call others')
     p_sum.add_argument('path')
+    p_tally = sub.add_parser('tally', help='re-count a verdict file, with and without allowlist-blocked pairs')
+    p_tally.add_argument('path')
     args = parser.parse_args()
     {'probe': probe, 'run': run, 'judge': judge, 'rescore': rescore,
-     'summarize': lambda a: summarize(a.path)}[args.command](args)
+     'summarize': lambda a: summarize(a.path), 'tally': lambda a: retally(a.path)}[args.command](args)
 
 
 if __name__ == '__main__':
