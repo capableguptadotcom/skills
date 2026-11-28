@@ -168,7 +168,7 @@ def apply_change(case, workdir, author):
 
 
 def parse(host, stdout, workdir, skill):
-    loaded, tools, usage, answer, cost = set(), 0, {}, '', None
+    loaded, tools, usage, answer, cost, available = set(), 0, {}, '', None, []
     for line in stdout.splitlines():
         try:
             event = json.loads(line)
@@ -185,6 +185,8 @@ def parse(host, stdout, workdir, skill):
                     tools += 1
                     if part.get('name') == 'Skill':
                         loaded.add(str((part.get('input') or {}).get('skill', '')).split(':')[-1])
+            if event.get('type') == 'system' and event.get('subtype') == 'init':
+                available = event.get('skills') or []
             if event.get('type') == 'result':
                 answer = event.get('result') or ''
                 cost = event.get('total_cost_usd')
@@ -199,7 +201,7 @@ def parse(host, stdout, workdir, skill):
         last = last_message(workdir)
         answer = last.read_text(encoding='utf-8', errors='replace') if last.exists() else ''
     return {'skill_loaded': skill in loaded, 'skills_loaded': sorted(loaded - {''}), 'tool_calls': tools,
-            'usage': usage, 'cost_usd': cost, 'answer': answer}
+            'usage': usage, 'cost_usd': cost, 'answer': answer, 'skill_available': skill in available}
 
 
 def redact(text):
@@ -286,6 +288,10 @@ def run(args):
                                       errors='replace', timeout=args.timeout,
                                       stdin=subprocess.DEVNULL, env=child_env(args.host))
                 parsed = parse(args.host, proc.stdout, workdir, loaded_name)
+                if condition == 'named' and args.host == 'claude' and parsed['skill_available']:
+                    # Claude Code expands /<skill> into the prompt without a Skill tool call, so the stream
+                    # never shows the load; the skill being listed at start-up is what makes the name resolve.
+                    parsed['skill_loaded'] = True
                 patch = full_patch(workdir)
                 checks = check(case, workdir, parsed['answer'], args.skill, patch)
                 record = {'skill': args.skill, 'variant': variant, 'peers': [Path(p).name for p in args.peer or []],
@@ -311,7 +317,7 @@ def run(args):
                     return
                 shutil.rmtree(workdir, ignore_errors=True)
                 last_message(workdir).unlink(missing_ok=True)
-    print(f'\nResults: {out.relative_to(ROOT)}')
+    print(f'\nResults: {out}')
     summarize(out)
 
 
