@@ -4,6 +4,30 @@ Each release records what changed and the evaluation summary that justified it.
 
 ## Unreleased
 
+- Second pstack review ([docs/research/pstack-second-review.md](docs/research/pstack-second-review.md)), pinned at cursor/plugins `b7b93c3` (0.15.48). It covers what changed since `4dd1d05`, evidence of real use, all 59 entrypoints classified, the `statechart` adaptation and what the verification draft needs to ship. No skill added or changed.
+  - Evaluated the three most-installed pstack skills on Claude Code with Sonnet, 3 repeats, judged blind by Opus in both orders. Wins or ties by name, suite rubric / outcome-only, with 95% intervals:
+
+    | Candidate | vs no skill | vs the pack owner |
+    | --- | --- | --- |
+    | `typescript-best-practices` (with its `paths:` line removed) | 8/9 (56–98%) / 9/9 (70–100%) | vs `develop`: 4/9 (19–73%) / 5/9 (27–81%) |
+    | `blast-radius` | 9/9 (70–100%) / 5/9 (27–81%) | vs `review-change`: 9/9 (70–100%) / 7/9 (45–94%) |
+    | `unslop` | 8/9 (56–98%) / 6/9 (35–88%) | no owner |
+
+  - New draft [drafts/statechart-everystate](drafts/statechart-everystate/): `statechart` without Java, TLC or a TypeScript runtime.
+    - Instructions in `SKILL.draft.md` (not installable).
+    - `trace_chart.py` (read-only Python) turns everystate's `-json` trace, and optionally its state graph, into a Mermaid chart and a numbered bug path. Tested in `tests/test_scripts.py`.
+    - everystate 0.4.1 matched TLC 2.19 on all 33 of upstream statechart's recorded cases (exit code, rule and shortest trace; state counts where TLC printed them; state graphs).
+    - Evaluated on four TypeScript flows (`eval/statechart-everystate`). Against no skill it won 12/12 on the suite rubric but only 3/12 outcome-only. The same procedure without the chart did no worse (chart vs no chart: 5/12 suite, 8/12 outcome-only). It stays a draft.
+  - None clears `CONTRIBUTING.md`: `develop` and `review-change` already cover the first two, and `blast-radius` and `unslop` gain only in the report. As published, `typescript-best-practices` never loads in Claude Code: its `paths:` glob hides it in all 18 runs.
+  - New eval suites with synthetic fixtures: `eval/typescript-best-practices` (TypeScript state, webhook boundary, one-line near miss; hidden tests on Node's type stripping), `eval/blast-radius` (a TypeScript service whose changes break a Python job and saved data, plus a safe change), `eval/unslop` (PR description, release notes with literals, typo-only near miss).
+- Eval harness (Claude Code):
+  - The `PowerShell` tool is removed (`--disallowedTools PowerShell`). On Windows the agent then uses Bash, where the allowlist applies; before, PowerShell commands were refused, which cost most to skills that run code. Five earlier results files record such refusals.
+  - The allowlist adds `node`, `npm test`, `head`, `tail` and `grep`.
+  - Redaction also catches Git Bash paths (`/c/Users/<name>`).
+  - Runs record the disallowed tools.
+  - The allowlist adds `npx everystate@0.4.1`, pinned.
+  - Output is written as UTF-8, so a judge reason with an arrow no longer stops a judge run on Windows.
+
 - `skill-feedback` sets `metadata.internal: true`. The skills CLI leaves it out unless `INSTALL_INTERNAL_SKILLS=1`, so the team install is now `npx skills add capableguptadotcom/skills --copy --agent claude-code codex -y`, with no skill list. A test checks that only `skill-feedback` is internal.
 - New [docs/writing-skills.md](docs/writing-skills.md): how to write and evaluate a skill, with a checklist and the candidates considered so far (`grill-me`, `grill-with-docs`, formal verification, `statechart`) and where each stands. The README gains usage examples.
 - README rewritten shorter. Updating means running the install command again: tested with skills CLI 1.8.1, `npx skills update` replaces copied folders with links to an absolute path on the installer's machine, which break once committed.

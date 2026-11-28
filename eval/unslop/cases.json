@@ -1,0 +1,67 @@
+{
+  "skill": "unslop",
+  "spec": "eval/unslop/spec.md",
+  "candidate": "Upstream pstack skill, evaluated from a copy outside this repository. No pack skill or Claude Code built-in owns this job.",
+  "outcome_rubric": [
+    "Meaning kept: every fact, number, name, caveat, command, code block and quotation in the original survives unchanged in substance; nothing is added that the original did not say.",
+    "Plain prose: the result reads like a careful engineer wrote it: no filler, hype, empty attributions, decorative formatting or generic conclusions.",
+    "Scope: edits only the file and the parts the request covers.",
+    "Judge only the resulting text. Do not reward the agent's explanation of what it changed."
+  ],
+  "rubric": [
+    "Meaning kept: every fact, number, name, caveat, command, code block and quotation in the original survives unchanged in substance; nothing is added that the original did not say.",
+    "Plain prose: the result reads like a careful engineer wrote it: no filler, hype, empty attributions, decorative formatting or generic conclusions.",
+    "Scope: edits only the file and the parts the request covers.",
+    "Concision: the reply to the user is short. Length alone is not a virtue."
+  ],
+  "cases": [
+    {
+      "id": "pr-description",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/prose-pr",
+      "expect_load": true,
+      "prompt": "Clean up PR_DESCRIPTION.md before I post it. It reads like an AI wrote it.",
+      "judge_truth": "The facts to keep: line-item updates are batched into one request per checkout; src/cart/useCart.ts holds the cart state; the new path is behind the feature flag cart_v2, which defaults off; in a staging load test p95 checkout latency fell from 840 ms to 310 ms and error rates stayed flat at 0.2%; unit tests for the batching queue were added and pass; it was not tested on Safari 17, where the old request queue had a known ordering bug; Closes #482. Everything else is filler: the landscape opener, 'delves', 'leveraging', 'seamless', 'vibrant', 'not just X but Y', the rocket emoji, bold labels that restate the line, 'the results speak for themselves', 'it's important to note', the Conclusion section and the chatbot sign-off. A good result is much shorter, keeps every fact and the Safari caveat, and invents no new claims (for example no new numbers or reviewers).",
+      "checks": [
+        {"type": "files_changed", "name": "edits the description", "paths": ["PR_DESCRIPTION.md"]},
+        {"type": "paths_unchanged", "name": "touches nothing else", "paths": ["README.md", "src/"]},
+        {"type": "file_contains", "name": "keeps the latency numbers", "path": "PR_DESCRIPTION.md", "text": "310 ms"},
+        {"type": "file_contains", "name": "keeps the baseline latency", "path": "PR_DESCRIPTION.md", "text": "840 ms"},
+        {"type": "file_contains", "name": "keeps the flag", "path": "PR_DESCRIPTION.md", "text": "cart_v2"},
+        {"type": "file_contains", "name": "keeps the Safari caveat", "path": "PR_DESCRIPTION.md", "text": "Safari 17"},
+        {"type": "file_contains", "name": "keeps the error rate", "path": "PR_DESCRIPTION.md", "text": "0.2%"},
+        {"type": "file_contains", "name": "keeps the issue link", "path": "PR_DESCRIPTION.md", "text": "#482"},
+        {"type": "patch_lacks", "name": "adds no stock AI vocabulary", "pattern": "\\b(delve|delves|leverag|seamless|vibrant|crucial|pivotal|showcas|underscor|landscape|foster)"}
+      ]
+    },
+    {
+      "id": "release-notes-literals",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/prose-release",
+      "expect_load": true,
+      "prompt": "Tighten RELEASE_NOTES.md. It's wordy.",
+      "judge_truth": "The prose is padded ('It is with great excitement', 'pivotal', 'elevates', 'In order to', 'Additionally', 'in some cases ... could potentially', 'serving as a testament to'). The literal parts must stay exactly as they are: the error message inside the code block (`SyncError: crucial manifest chunk missing — retry budget exhausted (code E_MANIFEST_42)`, which contains the word 'crucial' and an em dash because that is what the program prints), the migration command, and the beta tester's quotation. Rewriting the error text, the command or the quote is a defect, because users search for the exact error and the quote is someone else's words. Facts to keep: the fix applies to folders with more than 10,000 files; the config moved from ~/.syncrc to ~/.config/sync/config.toml; the --fast flag was removed, deprecated since 3.1.0.",
+      "checks": [
+        {"type": "files_changed", "name": "edits the notes", "paths": ["RELEASE_NOTES.md"]},
+        {"type": "file_contains", "name": "keeps the exact error message", "path": "RELEASE_NOTES.md", "text": "SyncError: crucial manifest chunk missing — retry budget exhausted (code E_MANIFEST_42)"},
+        {"type": "file_contains", "name": "keeps the exact command", "path": "RELEASE_NOTES.md", "text": "sync migrate-config --from ~/.syncrc --to ~/.config/sync/config.toml"},
+        {"type": "file_contains", "name": "keeps the quotation", "path": "RELEASE_NOTES.md", "text": "the folder that used to hang for an hour now finishes in four minutes"},
+        {"type": "file_contains", "name": "keeps the file count", "path": "RELEASE_NOTES.md", "text": "10,000"},
+        {"type": "file_contains", "name": "keeps the deprecation version", "path": "RELEASE_NOTES.md", "text": "3.1.0"}
+      ]
+    },
+    {
+      "id": "typo-only",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/prose-typo",
+      "expect_load": false,
+      "prompt": "Fix the typo in CONTRIBUTING.md (\"recieve\").",
+      "judge_truth": "Change 'recieve' to 'receive' and nothing else. The first paragraph has an em dash and the word 'crucial', which a prose-cleanup rule list would flag, but the user asked for one typo fix: rewriting their sentence is out of scope. Mentioning it in one line is fine; editing it is not.",
+      "checks": [
+        {"type": "file_contains", "name": "fixes the typo", "path": "CONTRIBUTING.md", "text": "You will receive a review within two working days."},
+        {"type": "file_contains", "name": "leaves the user's own sentence alone", "path": "CONTRIBUTING.md", "text": "Every change to a token is crucial for downstream apps — so we review them carefully."},
+        {"type": "file_contains", "name": "leaves the steps alone", "path": "CONTRIBUTING.md", "text": "2. Run `npm run build:tokens` and commit the generated files."}
+      ]
+    }
+  ]
+}

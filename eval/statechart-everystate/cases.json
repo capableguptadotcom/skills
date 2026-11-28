@@ -1,0 +1,67 @@
+{
+  "skill": "statechart-everystate",
+  "spec": "eval/statechart-everystate/spec.md",
+  "candidate": "Draft in drafts/statechart-everystate, installed for evaluation only from a copy with SKILL.draft.md renamed to SKILL.md. model-check.SKILL.md is the same procedure without the chart.",
+  "outcome_rubric": [
+    "Correct verdict: says whether the promise can break, and when it can, names the concrete interleaving or failure that breaks it, in terms of the real code; on the safe case, says it cannot break that way and why. Does not endorse a wrong verdict.",
+    "Fix: when it breaks, points to a fix that removes the cause (an idempotency key, an atomic claim or set-if-absent), not one that only narrows the window.",
+    "Scope: edits no product code.",
+    "Judge only whether the verdict and the fix are right and clear to the person who must act on them. Do not reward diagrams, model files or stated checks for their own sake."
+  ],
+  "rubric": [
+    "Correct verdict: says whether the promise can break, and when it can, names the concrete interleaving or failure that breaks it, in terms of the real code; on the safe case, says it cannot break that way and why. Does not endorse a wrong verdict.",
+    "Fix: when it breaks, points to a fix that removes the cause (an idempotency key, an atomic claim or set-if-absent), not one that only narrows the window.",
+    "Evidence: the verdict rests on something checked (a model run, a test, a traced interleaving), and the answer says what was and was not checked.",
+    "Clarity: a product engineer can follow the bad sequence of events and see where it goes wrong.",
+    "Scope and concision: edits no product code; no padding. Length alone is not a virtue."
+  ],
+  "cases": [
+    {
+      "id": "double-submit-checkout",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/sc-checkout",
+      "expect_load": true,
+      "prompt": "Can a customer be charged twice for one order? Find out before we ship. Don't change the code.",
+      "judge_truth": "Yes. payOrder reads the order, checks status !== \"paid\", awaits payments.charge, and only then writes status \"paid\". Two requests for the same order (a double-click that fires before React re-renders the disabled button, a browser resending the POST, two tabs, or two API instances) can both read \"pending\" before either writes \"paid\", so both pass the check and both charge the card. The disabled button is client-side only and does not prevent it. A crash or timeout after the charge and before the update also leaves the order pending, so a retry charges again. Fixes that remove the cause: pass an idempotency key derived from the order (the provider supports idempotencyKey) and/or claim the order atomically before charging (OrderStore.claim already exists: pending -> charging). Re-reading the status just before charging only narrows the window. No product code should change.",
+      "checks": [
+        {"type": "paths_unchanged", "name": "no product edits", "paths": ["src/", "README.md", "package.json"]},
+        {"type": "answer_matches", "name": "says it can charge twice", "pattern": "\\byes\\b|charged twice|charge[sd]? (the card |the customer )?twice|two charges|double[- ]charg|both (requests )?(pass|charge|call)"}
+      ]
+    },
+    {
+      "id": "retry-sends-twice",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/sc-invoice",
+      "expect_load": true,
+      "prompt": "Can a customer get the same invoice email twice? Don't change the code.",
+      "judge_truth": "Yes, in two ways. (1) withTimeout rejects after 5 s but does not cancel the send, and the provider can take more than 10 s to reply while still delivering; the loop then sends again with no idempotencyKey, so the customer gets two (up to three) copies. (2) If the process dies, or markSent fails, after a successful send, invoices.sentAt is never set and the job queue retries the job, which sends again. Fix: pass a stable idempotencyKey such as the invoice id to mail.send (the provider dedupes for 24 hours), which covers both the in-process retry and the queue retry; a longer timeout only narrows the window. No product code should change.",
+      "checks": [
+        {"type": "paths_unchanged", "name": "no product edits", "paths": ["src/", "docs/", "README.md", "package.json"]},
+        {"type": "answer_matches", "name": "names the missing idempotency key", "pattern": "idempotency ?key|idempotencyKey"}
+      ]
+    },
+    {
+      "id": "lease-race",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/sc-lease",
+      "expect_load": true,
+      "prompt": "Two worker pods run the nightly export. Can both run it at the same time? Don't change the code.",
+      "judge_truth": "Yes. tryAcquire reads the lease with store.get and then writes it with store.set: two round trips, with an await between. When both pods start at 02:00 they can both read no lease, both write their own, and both return true, so both run the export and corrupt the files. The second set overwrites the first owner without either noticing. A related problem: the finally block deletes the key unconditionally, so a worker can delete a lease it does not hold. Fix: acquire atomically with setIfAbsent (SET NX PX), which the store already offers, and delete only if this worker still owns the lease (compare before delete, ideally atomically). No product code should change.",
+      "checks": [
+        {"type": "paths_unchanged", "name": "no product edits", "paths": ["src/", "README.md", "package.json"]},
+        {"type": "answer_matches", "name": "points to the atomic acquire", "pattern": "setIfAbsent|SET\\s+NX|\\bNX\\b|set[- ]if[- ]absent|atomic"}
+      ]
+    },
+    {
+      "id": "safe-claim",
+      "kind": "behavior",
+      "fixture": "eval/fixtures/sc-checkout-safe",
+      "expect_load": true,
+      "prompt": "Can a customer be charged twice for one order? Find out before we ship. Don't change the code.",
+      "judge_truth": "No, not through concurrent requests or retries. Before charging, payOrder claims the order with OrderStore.claim(pending -> charging), a single conditional UPDATE (and atomic in the in-memory version, which checks and writes with no await between), so only one request gets past it; the others get 409. The charge also carries idempotencyKey order-<id>, so even a resent charge for the same order moves no money twice. The real residual risk is different: if the process dies or the update fails after the claim, the order stays \"charging\" and every retry gets 409, so it needs recovery (for example a sweep that checks the provider by idempotency key). Saying the customer can be charged twice is wrong.",
+      "checks": [
+        {"type": "paths_unchanged", "name": "no product edits", "paths": ["src/", "README.md", "package.json"]}
+      ]
+    }
+  ]
+}

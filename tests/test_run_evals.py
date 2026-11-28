@@ -211,6 +211,21 @@ class ConversationTest(unittest.TestCase):
         self.assertNotIn('--no-session-persistence', first + later)
         self.assertIn('--no-session-persistence', plain)
 
+    def test_git_bash_paths_are_redacted(self):
+        original = run_evals.HOME
+        run_evals.HOME = Path('C:\\Users\\someone')
+        try:
+            text = run_evals.redact('S=/c/Users/someone/AppData/x; cat C:\\Users\\someone\\y')
+        finally:
+            run_evals.HOME = original
+        self.assertEqual(text, 'S=<home>/AppData/x; cat <home>\\y')
+
+    def test_powershell_is_removed_so_the_allowlist_applies(self):
+        args = run_evals.command('claude', 'hi', Path('.'), model='sonnet')
+        self.assertEqual(args[args.index('--disallowedTools') + 1], 'PowerShell')
+        self.assertEqual(args[-2:], ['--model', 'sonnet'])
+        self.assertIn('Bash(npm test)', args)
+
     def test_conversation_turns_and_agent_only_text(self):
         calls, forgotten = [], []
 

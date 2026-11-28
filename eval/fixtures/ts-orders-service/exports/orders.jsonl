@@ -1,0 +1,3 @@
+{"id":"o-1001","status":"paid","placedAt":"2026-10-30T09:12:00.000Z","total_cents":4200}
+{"id":"o-1002","status":"canceled","placedAt":"2026-10-31T15:40:00.000Z","total_cents":1999}
+{"id":"o-1003","status":"pending","placedAt":"2026-11-01T08:05:00.000Z","total_cents":650}
