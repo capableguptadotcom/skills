@@ -20,9 +20,9 @@
       "checks": [
         {"type": "files_unchanged", "name": "no edits while planning"},
         {"type": "answer_matches", "name": "finds there is no phone number",
-         "pattern": "(no|not? (have|has|include|contain)|lacks?|missing|without|doesn't (have|carry|include)|does not (have|carry|include))[^.\\n]{0,60}phone|phone[^.\\n]{0,80}(not (on|in|part of|present|stored|exist)|doesn't exist|does not exist|no field|missing|isn't|is not)"},
+         "pattern": "(no|not? (have|has|include|contain)|lacks?|missing|without|doesn't (have|carry|include)|does not (have|carry|include))[^.\\n]{0,60}phone|phone[^.\\n]{0,80}(not (on|in|part of|present|stored|exist)|doesn't exist|does not exist|no field|missing|isn't|is not)|neither[^.\\n]{0,40}phone"},
         {"type": "answer_matches", "name": "sees the whole-job retry resends email",
-         "pattern": "(retr\\w*[^.\\n]{0,160}(email|e-mail)[^.\\n]{0,80}(again|twice|duplicate|resen|re-sen|repeat)|(duplicate|twice|again|resen|re-sen|repeat)[^.\\n]{0,160}(retr|email))"}
+         "pattern": "(retr\\w*[^.\\n]{0,160}(email|e-mail)[^.\\n]{0,80}(again|twice|duplicate|resen|re-sen|repeat)|(duplicate|twice|again|resen|re-sen|repeat)[^.\\n]{0,160}(retr|email))|retr\\w*[^\\n]{0,300}(identical|copies of|five|several|multiple)[^.\\n]{0,25}(shipping )?e-?mails?"}
       ]
     },
     {
@@ -74,12 +74,12 @@
         {
           "type": "answer_matches",
           "name": "finds there is no phone number",
-          "pattern": "(no|not? (have|has|include|contain)|lacks?|missing|without|doesn't (have|carry|include)|does not (have|carry|include))[^.\\n]{0,60}phone|phone[^.\\n]{0,80}(not (on|in|part of|present|stored|exist)|doesn't exist|does not exist|no field|missing|isn't|is not)"
+          "pattern": "(no|not? (have|has|include|contain)|lacks?|missing|without|doesn't (have|carry|include)|does not (have|carry|include))[^.\\n]{0,60}phone|phone[^.\\n]{0,80}(not (on|in|part of|present|stored|exist)|doesn't exist|does not exist|no field|missing|isn't|is not)|neither[^.\\n]{0,40}phone"
         },
         {
           "type": "answer_matches",
           "name": "sees the whole-job retry resends email",
-          "pattern": "(retr\\w*[^.\\n]{0,160}(email|e-mail)[^.\\n]{0,80}(again|twice|duplicate|resen|re-sen|repeat)|(duplicate|twice|again|resen|re-sen|repeat)[^.\\n]{0,160}(retr|email))"
+          "pattern": "(retr\\w*[^.\\n]{0,160}(email|e-mail)[^.\\n]{0,80}(again|twice|duplicate|resen|re-sen|repeat)|(duplicate|twice|again|resen|re-sen|repeat)[^.\\n]{0,160}(retr|email))|retr\\w*[^\\n]{0,300}(identical|copies of|five|several|multiple)[^.\\n]{0,25}(shipping )?e-?mails?"
         }
       ]
     },

@@ -140,7 +140,26 @@ The drop against no skill with the host deciding (9/9 to 7/9) is inside both int
 
 **Result.** On Codex, `review-change` by name beat no skill on the suite rubric, 6/6 (4-2-0), and lost on outcome-only, 1/6. It beat the personal `code-review` 6/6 on both rubrics. That matches Claude Code.
 
-**Decision.** Not settled for `simplify-code`, `shape-change` and `diagnose` in Codex. Rerun when the limit resets: `scripts/run_evals.py run <skill> --host codex --repeats 2 --conditions named without`, then the same judges.
+**Second batch.** After the limit reset, Codex ran `simplify-code` in full and `shape-change` with no skill, then hit the limit again. The `grill-me` and `diagnose` runs did not happen, and their partial files were deleted. These runs used the final versions of the skills.
+
+| Codex, by name (2 repeats) | Suite rubric | Outcome-only |
+| --- | --- | --- |
+| `review-change` vs no skill | 6/6 (4-2-0) | 1/6 (0-1-5) |
+| `review-change` vs `code-review` | 6/6 (6-0-0) | 6/6 (4-2-0) |
+| `simplify-code` vs no skill | 5/6 (2-3-1) | 5/6 (2-3-1) |
+| `simplify-code` vs `code-simplifier` | 4/6 (3-1-2) | 4/6 (3-1-2) |
+| `shape-change` vs no skill | 3/5 (2-1-2) | no outcome rubric |
+
+Codex phrased two `shape-change` findings in ways the checks missed: "carries neither a phone number" and "five identical shipping emails" after a sentence about retries. Both patterns were widened. On every recorded run, the widening changes only those 6 Codex results, all from fail to pass, and no Claude Code result.
+
+**Decision.**
+
+- `review-change` and `simplify-code` behave in Codex as in Claude Code.
+- `simplify-code` beats no skill in Codex as well. That is the measured reason it stays, although Claude Code's `/simplify` writes the same code.
+- `shape-change` is at 3/5 against no skill in Codex. That is below 70% on five pairs, so it is not settled.
+- `diagnose` and `shape-change` against `grill-me` have not run in Codex.
+
+To finish: `scripts/run_evals.py run diagnose --host codex --repeats 2 --conditions named without` with the six judged cases; then the `grill-me` runs on the three single-turn shape cases; then the same judges.
 
 ## 6. Sweeps from more than one person (rule 1)
 
