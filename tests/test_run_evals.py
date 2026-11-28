@@ -90,12 +90,21 @@ class RunErrorTest(unittest.TestCase):
 
 
 class BlockedTest(unittest.TestCase):
-    def test_recorded_denial(self):
-        self.assertIn('command denied', run_evals.blocked({'permission_denials': ['Bash: "for i in 1 2"'], 'answer': ''}))
+    def test_refused_command_the_agent_worked_around(self):
+        record = {'permission_denials': ['Bash: "for i in 1 2"'], 'answer': 'I ran each seed; all pass.'}
+        self.assertEqual(run_evals.blocked(record), '')
+        self.assertIn('for i in 1 2', run_evals.denied(record))
 
     def test_answer_that_waits_for_approval(self):
         answer = 'I need your approval to run the loop script. Once you approve it, I will continue.'
         self.assertTrue(run_evals.blocked({'answer': answer}))
+
+    def test_conversation_reads_only_agent_turns(self):
+        turns = [('user', 'grill me'), ('agent', 'Which provider?'),
+                 ('user', 'Once you approve the plan, send it.'), ('agent', 'Plan: use Twilio.')]
+        record = {'answer': run_evals.transcript_text(turns), 'turns': 2}
+        self.assertEqual(run_evals.agent_text(record), 'Which provider?\n\nPlan: use Twilio.')
+        self.assertEqual(run_evals.blocked(record), '')
 
     def test_ordinary_answer(self):
         self.assertEqual(run_evals.blocked({'answer': 'I ran the tests; all 5 pass.'}), '')
@@ -114,6 +123,17 @@ class BlockedTest(unittest.TestCase):
         text = buffer.getvalue()
         self.assertIn('wins or ties 2/2', text)
         self.assertIn('wins or ties 1/1', text)
+
+
+class RedactTest(unittest.TestCase):
+    def test_paths_inside_lists_are_redacted(self):
+        home = str(run_evals.HOME)
+        record = {'answer': f'see {home}', 'permission_denials': [f'Bash: python {home}\\x.py'],
+                  'checks': [{'detail': home.replace('\\', '/')}], 'exit': 0}
+        text = json.dumps(run_evals.redact_record(record))
+        self.assertNotIn(home.replace('\\', '/'), text)
+        self.assertNotIn(json.dumps(home)[1:-1], text)
+        self.assertEqual(run_evals.redact_record(record)['exit'], 0)
 
 
 class WilsonTest(unittest.TestCase):
@@ -135,7 +155,8 @@ class JudgeTieTest(unittest.TestCase):
                 (Path(d) / name).write_text(json.dumps(row) + '\n', encoding='utf-8')
             args = type('Args', (), {'path': str(Path(d) / 'a.jsonl'), 'against': str(Path(d) / 'b.jsonl'),
                                      'pair': ['named', 'named'], 'seed': 7, 'out': str(Path(d) / 'v.jsonl'),
-                                     'both_orders': True, 'model': 'opus', 'redo_errors': False})()
+                                     'both_orders': True, 'model': 'opus', 'redo_errors': False,
+                                     'outcome_only': False})()
             original = run_evals.ask_judge
             run_evals.ask_judge = lambda *a, **k: {'winner': 'tie', 'reason': 'same'}
             try:

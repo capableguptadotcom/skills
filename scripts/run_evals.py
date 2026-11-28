@@ -107,13 +107,15 @@ def git(workdir, *args):
 
 
 def remove_workdir(workdir):
-    """Delete a workspace and the project folder Claude Code makes for it, which stays empty when the
-    run stored no session."""
+    """Delete a workspace and the project folder Claude Code makes for it, which holds only empty folders
+    (memory/) when the run stored no session. A folder with any file in it is kept."""
     shutil.rmtree(workdir, ignore_errors=True)
-    try:
-        (HOME / '.claude/projects' / re.sub(r'[^A-Za-z0-9]', '-', str(workdir))).rmdir()
-    except OSError:
-        pass
+    folder = HOME / '.claude/projects' / re.sub(r'[^A-Za-z0-9]', '-', str(workdir))
+    for path in [*sorted(folder.rglob('*'), reverse=True), folder] if folder.is_dir() else []:
+        try:
+            path.rmdir()
+        except OSError:
+            pass
 
 
 def new_workdir(prefix):
@@ -155,11 +157,27 @@ BLOCKED_ANSWER = re.compile(
 
 
 def blocked(record):
-    """Why a run was held back by a command the harness did not allow, or '' when it was not."""
-    if record.get('permission_denials'):
-        return 'command denied: ' + ', '.join(record['permission_denials'])[:120]
-    hit = BLOCKED_ANSWER.search(record.get('answer', ''))
+    """Why a run was held back by a command the harness did not allow, or '' when it was not. A refused
+    command alone does not count: agents usually run the steps one by one instead (in the diagnose rerun,
+    24 runs had a refused loop and every one passed its checks). Held back means the answer says it could
+    not do something."""
+    hit = BLOCKED_ANSWER.search(agent_text(record))
     return f'answer says: {hit[0]}' if hit else ''
+
+
+def agent_text(record):
+    """The agent's own words. A conversation's answer is the whole transcript, and the simulated user's
+    replies ("once you approve…") must not count as the agent's."""
+    answer = record.get('answer', '')
+    if not record.get('turns'):
+        return answer
+    return '\n\n'.join(part.split('\n', 1)[-1] for part in re.split(r'\n\n(?=\[(?:user|agent)\]\n)', answer)
+                       if part.startswith('[agent]\n'))
+
+
+def denied(record):
+    """Commands Claude Code refused during the run, whether or not the agent worked around them."""
+    return ', '.join(record.get('permission_denials') or [])[:120]
 
 
 def prepare(case, skill, host, condition, skill_path=None, peers=()):
@@ -253,7 +271,12 @@ def redact(text):
 
 
 def redact_record(record):
-    return {k: redact(v) if isinstance(v, str) else v for k, v in record.items()}
+    """Redact every string in a record, including those inside lists such as permission_denials."""
+    if isinstance(record, dict):
+        return {k: redact_record(v) for k, v in record.items()}
+    if isinstance(record, list):
+        return [redact_record(v) for v in record]
+    return redact(record)
 
 
 def full_patch(workdir):
@@ -329,11 +352,12 @@ def simulate_user(case, transcript, model='sonnet'):
     workdir = new_workdir('user')
     prompt = SIMULATED_USER.format(prompt=case['prompt'], facts=case['simulated_user']['facts'],
                                    transcript=transcript)
-    proc = subprocess.run(['claude', '-p', prompt, '--output-format', 'json', '--setting-sources', 'project',
+    # The prompt goes on stdin: two conversations in one judge prompt pass Windows' 32K command-line limit.
+    proc = subprocess.run(['claude', '-p', '--output-format', 'json', '--setting-sources', 'project',
                            '--no-session-persistence', '--model', model, '--disallowedTools',
                            'Bash', 'Edit', 'Write', 'Read', 'Glob', 'Grep', 'Skill', 'Agent', 'Task'],
                           cwd=workdir, capture_output=True, text=True, encoding='utf-8', errors='replace',
-                          timeout=300, stdin=subprocess.DEVNULL)
+                          timeout=300, input=prompt)
     remove_workdir(workdir)
     try:
         result = json.loads(proc.stdout)
@@ -574,11 +598,12 @@ def ask_judge(case, first, second, model, rubric=None):
                                  b=second['answer'][:limit], pb=second.get('patch', '')[:4000] or '(none)',
                                  ta=hidden_results(case, first), tb=hidden_results(case, second))
     workdir = new_workdir('judge')
-    proc = subprocess.run(['claude', '-p', prompt, '--output-format', 'json', '--setting-sources', 'project',
+    # The prompt goes on stdin: two conversations in one judge prompt pass Windows' 32K command-line limit.
+    proc = subprocess.run(['claude', '-p', '--output-format', 'json', '--setting-sources', 'project',
                            '--no-session-persistence', '--model', model, '--disallowedTools',
                            'Bash', 'Edit', 'Write', 'Read', 'Glob', 'Grep', 'Skill'],
                           cwd=workdir, capture_output=True, text=True, encoding='utf-8', errors='replace',
-                          timeout=600, stdin=subprocess.DEVNULL)
+                          timeout=600, input=prompt)
     remove_workdir(workdir)
     try:
         text = json.loads(proc.stdout).get('result', '')
@@ -607,6 +632,11 @@ def judge(args):
     right_label = side_label({'variant': others[0]['variant'], 'condition': right}, by_variant)
     if left_label == right_label:
         sys.exit(f'Both sides are {left_label}; pick different conditions or a different file.')
+    # --outcome-only judges on the suite's outcome_rubric: what was found or kept, scope and concision, with the
+    # criteria that reward a skill's reporting style (evidence shown, coverage stated) left out.
+    rubric = spec.get('outcome_rubric') if args.outcome_only else spec.get('rubric')
+    if args.outcome_only and not rubric:
+        sys.exit(f'{skill} has no outcome_rubric in its cases.json.')
     rng = __import__('random').Random(args.seed)
     if args.out:
         out = Path(args.out).resolve()
@@ -639,7 +669,7 @@ def judge(args):
             orders.append(orders[0][::-1])
         labels, reasons = [], []
         for first, second in orders:
-            verdict = ask_judge(case, first, second, args.model, spec.get('rubric'))
+            verdict = ask_judge(case, first, second, args.model, rubric)
             names = {'A': side_label(first, by_variant), 'B': side_label(second, by_variant), 'TIE': 'tie'}
             labels.append(names.get(str(verdict.get('winner', '')).strip().upper(), 'error'))
             reasons.append(verdict.get('reason', ''))
@@ -649,7 +679,9 @@ def judge(args):
         verdict_row = {'case': row['case'], 'repeat': row['repeat'], 'sides': [left_label, right_label],
                        'shown_first': side_label(first, by_variant), 'winner': label, 'verdicts': labels,
                        'reasons': [redact(r) for r in reasons], 'judge': args.model,
-                       'blocked': [redact(blocked(row)), redact(blocked(other))]}
+                       'blocked': [redact(blocked(row)), redact(blocked(other))],
+                       'denied': [redact(denied(row)), redact(denied(other))],
+                       'rubric': 'outcome' if args.outcome_only else 'suite'}
         with out.open('a', encoding='utf-8') as handle:
             handle.write(json.dumps(verdict_row) + '\n')
         print(f"{row['case']:<28} r{row['repeat']} winner={label:<24} {reasons[0][:100]}", flush=True)
@@ -728,6 +760,8 @@ def main():
     p_judge.add_argument('--out', help='write verdicts here instead of beside the results file')
     p_judge.add_argument('--redo-errors', action='store_true',
                          help='re-judge only the pairs the verdict file records as judge errors')
+    p_judge.add_argument('--outcome-only', action='store_true',
+                         help="judge on the suite's outcome_rubric, without criteria about reporting style")
     p_judge.add_argument('--both-orders', action='store_true',
                          help='judge each pair in both orders; count a win only when the verdicts agree')
     for p in (p_probe, p_run):
