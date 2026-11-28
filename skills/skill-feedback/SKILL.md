@@ -2,6 +2,8 @@
 name: skill-feedback
 description: Turn problems with installed skills into sanitized local drafts of issues or PRs with synthetic test cases, from one session or a sweep of your recent sessions (which skills ran, were named, went unused or were pushed back on). Posts only to a repository you name and can push to. Invoke by name or schedule.
 disable-model-invocation: true
+metadata:
+  internal: true
 ---
 
 # Report skill problems
