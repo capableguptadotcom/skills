@@ -79,7 +79,7 @@ Automated checks passed in every no-skill review and simplify run (9/9 each) and
 
 **Why.** Rule 2 is about the job as the spec defines it, and a review that shows its evidence and says what it did not check is that job. But "measurably better" should not rest only on a rubric that rewards the skill's own style. The outcome-only re-judge is how that showed up, so `CONTRIBUTING.md` now asks for both rubrics (see below).
 
-**Follow-up.** Add a `review-change` fixture where a no-skill review misses a defect, for example one that only shows when a check is run, then measure again.
+**Follow-up, still open.** Add a `review-change` fixture where a no-skill review misses a defect, then measure again. The first attempt, a noisy "just tidying" diff, did not separate them (see "What these fixtures cannot show" below).
 
 ## 3. Host built-ins: Claude Code's `/code-review` and `/simplify` (rule 3)
 
